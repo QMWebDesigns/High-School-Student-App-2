@@ -23,8 +23,11 @@ const AdminDashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+
   const fetchAnalytics = useCallback(async () => {
     setLoading(true);
+    setAnalyticsError(null);
     try {
       const [surveysResult, papersResult] = await Promise.all([
         getSurveys(),
@@ -53,9 +56,13 @@ const AdminDashboard: React.FC = () => {
           totalSurveys: surveysResult.surveys.length,
           totalPapers: papersResult.papers.length
         });
+      } else {
+        const err = surveysResult.error || papersResult.error || 'Failed to load analytics';
+        setAnalyticsError(err as string);
       }
     } catch (error) {
       console.error('Error fetching analytics:', error);
+      setAnalyticsError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -118,6 +125,12 @@ const AdminDashboard: React.FC = () => {
           ))}
         </nav>
       </div>
+
+      {analyticsError && (
+        <div className="mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-200 px-4 py-3 rounded">
+          {analyticsError}
+        </div>
+      )}
 
       {activeTab === 'dashboard' && (
         <div className="space-y-8">

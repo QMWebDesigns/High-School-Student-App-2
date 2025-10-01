@@ -43,7 +43,8 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
     subjects: [] as string[],
     studyFrequency: '',
     preferredResources: [] as string[],
-    additionalComments: ''
+    additionalComments: '',
+    contactEmail: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -73,8 +74,9 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!currentUser?.email) {
-      setError('User email not available');
+    const studentEmail = currentUser?.email || formData.contactEmail.trim();
+    if (!studentEmail) {
+      setError('Please provide your email address');
       return;
     }
 
@@ -92,7 +94,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
     setError('');
 
     const surveyData: SurveyData = {
-      studentEmail: currentUser.email,
+      studentEmail,
       subjects: formData.subjects,
       studyFrequency: formData.studyFrequency,
       preferredResources: formData.preferredResources,
@@ -112,8 +114,9 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
       } else {
         setError(result.error || 'Failed to submit survey');
       }
-    } catch {
-      setError('An unexpected error occurred');
+    } catch (e: unknown) {
+      console.error('Survey submit error:', e);
+      setError('An unexpected error occurred while submitting. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -178,6 +181,21 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
               {error}
             </div>
           )}
+            {!currentUser?.email && (
+              <div>
+                <label htmlFor="contactEmail" className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Your email address
+                </label>
+                <input
+                  id="contactEmail"
+                  type="email"
+                  value={formData.contactEmail}
+                  onChange={(e) => setFormData(prev => ({...prev, contactEmail: e.target.value}))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                  placeholder="name@example.com"
+                />
+              </div>
+            )}
 
           <div className={variant === 'modal' ? 'max-h-[70vh] overflow-y-auto pr-1' : ''}>
           <form onSubmit={handleSubmit} className="space-y-8">
