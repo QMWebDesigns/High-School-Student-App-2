@@ -54,8 +54,13 @@ A comprehensive digital library application for high school students to access p
    - Copy your Firebase config to `src/config/firebase.ts`
 
 4. **Configure GitHub (for PDF uploads)**
-   - Create a GitHub Personal Access Token with repo permissions
-   - Update `src/services/githubService.ts` with your token and repository
+   - Create a GitHub Personal Access Token (classic) with `repo` scope
+   - Copy `.env.example` to `.env.local` and fill:
+     ```bash
+     VITE_GITHUB_TOKEN=ghp_your_token_here
+     VITE_GITHUB_REPO=QMWebDesigns/High-School-Student-App-2
+     VITE_GITHUB_BRANCH=main
+     ```
 
 5. **Set up environment variables**
    ```bash
@@ -146,13 +151,9 @@ src/
 
 ### GitHub Integration
 
-1. Create a GitHub Personal Access Token
-2. Grant `repo` permissions
-3. Update `src/services/githubService.ts`:
-   ```typescript
-   const GITHUB_TOKEN = "your_token_here";
-   const GITHUB_REPO = "your_username/your_repo";
-   ```
+1. Create a GitHub Personal Access Token (classic) with `repo` scope
+2. Set environment variables in `.env.local` as shown above
+3. Restart dev server after changes
 
 ## Security Considerations
 
