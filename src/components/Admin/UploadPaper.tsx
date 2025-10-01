@@ -220,7 +220,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.title}
                 onChange={(e) => handleMetadataChange('title', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
@@ -232,7 +232,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.grade}
                 onChange={(e) => handleMetadataChange('grade', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Grade</option>
                 {GRADES.map(grade => (
@@ -249,7 +249,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.subject}
                 onChange={(e) => handleMetadataChange('subject', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Subject</option>
                 {SUBJECTS.map(subject => (
@@ -266,7 +266,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.province}
                 onChange={(e) => handleMetadataChange('province', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Province</option>
                 {PROVINCES.map(province => (
@@ -283,7 +283,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.examType}
                 onChange={(e) => handleMetadataChange('examType', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Exam Type</option>
                 {EXAM_TYPES.map(type => (
@@ -303,7 +303,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.year}
                 onChange={(e) => handleMetadataChange('year', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>
@@ -316,7 +316,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
               rows={3}
               value={metadata.description}
               onChange={(e) => handleMetadataChange('description', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               placeholder="Brief description of the paper..."
             />
           </div>
@@ -330,7 +330,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 type="text"
                 value={metadata.publisher}
                 onChange={(e) => handleMetadataChange('publisher', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Department of Education"
               />
             </div>
@@ -343,7 +343,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 type="text"
                 value={metadata.identifier}
                 onChange={(e) => handleMetadataChange('identifier', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Unique identifier"
               />
             </div>
@@ -353,7 +353,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
             <button
               type="submit"
               disabled={uploading || !file}
-              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {uploading ? 'Uploading...' : 'Upload Paper'}
             </button>
