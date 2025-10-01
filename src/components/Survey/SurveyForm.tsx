@@ -107,9 +107,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
         if (onSubmit) {
           onSubmit(surveyData);
         } else {
-          setTimeout(() => {
-            navigate('/login');
-          }, 2000);
+          navigate('/login');
         }
       } else {
         setError(result.error || 'Failed to submit survey');
