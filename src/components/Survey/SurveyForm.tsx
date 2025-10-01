@@ -33,7 +33,11 @@ const PREFERRED_RESOURCES = [
   'Notes & Summaries'
 ];
 
-const SurveyForm: React.FC = () => {
+interface SurveyFormProps {
+  onSubmit?: (surveyData: SurveyData) => void;
+}
+
+const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     subjects: [] as string[],
     studyFrequency: '',
@@ -99,9 +103,13 @@ const SurveyForm: React.FC = () => {
       
       if (result.success) {
         setSubmitted(true);
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+        if (onSubmit) {
+          onSubmit(surveyData);
+        } else {
+          setTimeout(() => {
+            navigate('/login');
+          }, 2000);
+        }
       } else {
         setError(result.error || 'Failed to submit survey');
       }
