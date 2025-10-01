@@ -10,6 +10,7 @@ import SurveyForm from './components/Survey/SurveyForm';
 import ProtectedRoute from './components/Common/ProtectedRoute';
 import LoadingScreen from './components/Common/LoadingScreen';
 import ErrorBoundary from './components/Common/ErrorBoundary';
+import StyleGuide from './components/StyleGuide';
 
 const AppRoutes: React.FC = () => {
   const { currentUser, isUserAdmin, loading } = useAuth();
@@ -46,6 +47,7 @@ const AppRoutes: React.FC = () => {
         } />
         
         <Route path="/survey" element={<SurveyForm />} />
+        <Route path="/style-guide" element={<StyleGuide />} />
         
         <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
       </Routes>

@@ -35,9 +35,10 @@ const PREFERRED_RESOURCES = [
 
 interface SurveyFormProps {
   onSubmit?: (surveyData: SurveyData) => void;
+  variant?: 'page' | 'modal';
 }
 
-const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
+const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) => {
   const [formData, setFormData] = useState({
     subjects: [] as string[],
     studyFrequency: '',
@@ -121,6 +122,24 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
   };
 
   if (submitted) {
+    if (variant === 'modal') {
+      return (
+        <div className="w-full">
+          <div className="text-center">
+            <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+              Thank You!
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Your feedback has been submitted successfully.
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Redirecting to login page...
+            </p>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -144,8 +163,8 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
+    <div className={variant === 'modal' ? 'py-2' : 'min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8'}>
+      <div className={variant === 'modal' ? 'max-w-2xl mx-auto' : 'max-w-3xl mx-auto'}>
         <div className="text-center mb-8">
           <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
             Help Us Improve
@@ -162,6 +181,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
             </div>
           )}
 
+          <div className={variant === 'modal' ? 'max-h-[70vh] overflow-y-auto pr-1' : ''}>
           <form onSubmit={handleSubmit} className="space-y-8">
             <div>
               <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -174,7 +194,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
                       type="checkbox"
                       checked={formData.subjects.includes(subject)}
                       onChange={() => handleSubjectChange(subject)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                       {subject}
@@ -197,7 +217,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
                       value={frequency}
                       checked={formData.studyFrequency === frequency}
                       onChange={(e) => setFormData(prev => ({...prev, studyFrequency: e.target.value}))}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                       {frequency}
@@ -218,7 +238,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
                       type="checkbox"
                       checked={formData.preferredResources.includes(resource)}
                       onChange={() => handleResourceChange(resource)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                       {resource}
@@ -237,7 +257,7 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
                 rows={4}
                 value={formData.additionalComments}
                 onChange={(e) => setFormData(prev => ({...prev, additionalComments: e.target.value}))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Share any suggestions or feedback..."
               />
             </div>
@@ -246,13 +266,14 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit }) => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {submitting ? 'Submitting...' : 'Submit Survey'}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </div>

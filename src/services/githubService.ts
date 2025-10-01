@@ -1,6 +1,10 @@
-const GITHUB_REPO = "QMWebDesigns/High-School-Student-App-2"; // Update with your GitHub username/repo
-const GITHUB_BRANCH = "main";
-const GITHUB_TOKEN = "Digital Library Upload"; // Replace with your actual token
+const ENV_REPO = (import.meta as any).env?.VITE_GITHUB_REPO as string | undefined;
+const ENV_BRANCH = (import.meta as any).env?.VITE_GITHUB_BRANCH as string | undefined;
+const ENV_TOKEN = (import.meta as any).env?.VITE_GITHUB_TOKEN as string | undefined;
+
+const GITHUB_REPO = ENV_REPO || "QMWebDesigns/High-School-Student-App-2";
+const GITHUB_BRANCH = ENV_BRANCH || "main";
+const GITHUB_TOKEN = ENV_TOKEN || "";
 
 // Note: For production, you should:
 // 1. Create a GitHub Personal Access Token with repo permissions
@@ -24,10 +28,10 @@ export interface PaperMetadata {
 export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Promise<{ success: boolean; downloadUrl?: string; error?: string }> => {
   try {
     // Check if GitHub token is configured
-    if (GITHUB_TOKEN === "Digital Library Upload") {
-      return { 
-        success: false, 
-        error: "GitHub token not configured. Please set up a GitHub Personal Access Token in the githubService.ts file." 
+    if (!GITHUB_TOKEN) {
+      return {
+        success: false,
+        error: "GitHub token not configured. Set VITE_GITHUB_TOKEN in your environment."
       };
     }
 
@@ -54,7 +58,7 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
     const response = await fetch(url, {
       method: "PUT",
       headers: {
-        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Authorization": `Bearer ${GITHUB_TOKEN}`,
         "Content-Type": "application/json",
         "User-Agent": "Digital-Library-App"
       },

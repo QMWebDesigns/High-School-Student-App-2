@@ -43,15 +43,38 @@ const Login: React.FC = () => {
   }, [isLogin, email, password, signIn, signUp, navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-          {isLogin ? 'Sign in to your account' : 'Create your account'}
-        </h2>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
+        <div className="hidden lg:block">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 p-8 shadow-lg">
+            <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10" />
+            <div className="absolute -left-8 -bottom-8 h-40 w-40 rounded-full bg-white/10" />
+            <div className="relative">
+              <h1 className="text-3xl font-extrabold text-white">KZN Digital School Hub</h1>
+              <p className="mt-3 text-primary-100">
+                Empowering high school students in South Africa with resources that foster
+                excellence, promote lifelong learning, and bridge the knowledge gap.
+              </p>
+              <ul className="mt-6 space-y-2 text-primary-100">
+                <li className="flex items-start"><span className="mt-1 mr-2 h-2 w-2 rounded-full bg-white" /> Past exam papers</li>
+                <li className="flex items-start"><span className="mt-1 mr-2 h-2 w-2 rounded-full bg-white" /> Study guides and tips</li>
+                <li className="flex items-start"><span className="mt-1 mr-2 h-2 w-2 rounded-full bg-white" /> Insights to improve learning</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="mt-8 lg:mt-0 sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="text-center lg:hidden">
+            <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+              {isLogin ? 'Sign in to your account' : 'Create your account'}
+            </h2>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Empowering South African high school students to excel and keep learning.
+            </p>
+          </div>
+
+          <div className="mt-6 bg-white dark:bg-gray-800 py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
             <div className="mb-4 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-200 px-4 py-3 rounded">
               {error}
@@ -72,7 +95,7 @@ const Login: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   placeholder="Enter your email"
                 />
                 <Mail className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
@@ -92,7 +115,7 @@ const Login: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 pl-10 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 pl-10 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                   placeholder="Enter your password"
                 />
                 <Lock className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
@@ -110,7 +133,7 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? (
                   <>
@@ -128,11 +151,12 @@ const Login: React.FC = () => {
             <div className="text-center">
               <button
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 text-sm font-medium"
+                className="text-primary-600 dark:text-primary-500 hover:text-primary-700 dark:hover:text-primary-400 text-sm font-medium"
               >
                 {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
               </button>
             </div>
+          </div>
           </div>
         </div>
       </div>
