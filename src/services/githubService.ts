@@ -43,9 +43,17 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
       };
     }
 
-    // Create organized folder structure
+    // Create organized folder structure (URL-encode each path segment)
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const path = `papers/grade-${metadata.grade}/${metadata.subject}/${metadata.year}/${metadata.examType}/${sanitizedFileName}`;
+    const pathSegments = [
+      'papers',
+      `grade-${encodeURIComponent(metadata.grade)}`,
+      encodeURIComponent(metadata.subject),
+      encodeURIComponent(metadata.year),
+      encodeURIComponent(metadata.examType),
+      sanitizedFileName
+    ];
+    const path = pathSegments.join('/');
     const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`;
     
     const base64Content = await fileToBase64(file);
@@ -59,8 +67,8 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
       method: "PUT",
       headers: {
         "Authorization": `Bearer ${GITHUB_TOKEN}`,
-        "Content-Type": "application/json",
-        "User-Agent": "Digital-Library-App"
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(body)
     });
@@ -84,7 +92,8 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
       return { success: false, error: errorMessage };
     }
   } catch (error: unknown) {
-    return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
+    const message = error instanceof TypeError ? 'Network error (CORS or invalid URL). Please check repo, token, and path.' : (error instanceof Error ? error.message : 'An error occurred');
+    return { success: false, error: message };
   }
 };
 
