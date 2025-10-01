@@ -34,9 +34,9 @@ const Navigation: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400" />
               <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
-                Digital Library
+                KZN Digital School Hub
               </span>
             </div>
 
@@ -67,9 +67,9 @@ const Navigation: React.FC = () => {
         </div>
       </nav>
       {showSurvey && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-2xl">
-            <SurveyForm onSubmit={handleSurveySubmit} />
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center" role="dialog" aria-modal="true">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <SurveyForm onSubmit={handleSurveySubmit} variant="modal" />
           </div>
         </div>
       )}

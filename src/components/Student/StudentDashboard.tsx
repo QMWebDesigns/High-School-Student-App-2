@@ -129,7 +129,7 @@ const StudentDashboard: React.FC = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-400">Loading papers...</p>
             <div className="mt-4 w-64 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mx-auto">
-              <div className="bg-blue-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+              <div className="bg-primary-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ const StudentDashboard: React.FC = () => {
                   placeholder="Search papers..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                  className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
             </div>
@@ -167,7 +167,7 @@ const StudentDashboard: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as 'title' | 'year' | 'subject')}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="title">Sort by Title</option>
                 <option value="year">Sort by Year</option>
@@ -189,7 +189,7 @@ const StudentDashboard: React.FC = () => {
             <select
               value={filters.grade}
               onChange={(e) => handleFilterChange('grade', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="">All Grades</option>
               {GRADES.map(grade => (
@@ -200,7 +200,7 @@ const StudentDashboard: React.FC = () => {
             <select
               value={filters.subject}
               onChange={(e) => handleFilterChange('subject', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="">All Subjects</option>
               {SUBJECTS.map(subject => (
@@ -211,7 +211,7 @@ const StudentDashboard: React.FC = () => {
             <select
               value={filters.province}
               onChange={(e) => handleFilterChange('province', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="">All Provinces</option>
               {PROVINCES.map(province => (
@@ -250,8 +250,8 @@ const StudentDashboard: React.FC = () => {
             <div key={paper.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
-                  <BookOpen className="h-8 w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                  <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full">
+                  <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                  <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">
                     Grade {paper.grade}
                   </span>
                 </div>
@@ -286,7 +286,7 @@ const StudentDashboard: React.FC = () => {
                     href={paper.downloadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Download PDF
@@ -314,7 +314,7 @@ const StudentDashboard: React.FC = () => {
                 onClick={() => setCurrentPage(page)}
                 className={`px-3 py-2 rounded-lg transition-colors ${
                   page === currentPage
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-primary-600 text-white'
                     : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >

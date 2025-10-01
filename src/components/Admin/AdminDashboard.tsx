@@ -23,8 +23,11 @@ const AdminDashboard: React.FC = () => {
   });
   const [loading, setLoading] = useState(true);
 
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+
   const fetchAnalytics = useCallback(async () => {
     setLoading(true);
+    setAnalyticsError(null);
     try {
       const [surveysResult, papersResult] = await Promise.all([
         getSurveys(),
@@ -53,9 +56,13 @@ const AdminDashboard: React.FC = () => {
           totalSurveys: surveysResult.surveys.length,
           totalPapers: papersResult.papers.length
         });
+      } else {
+        const err = surveysResult.error || papersResult.error || 'Failed to load analytics';
+        setAnalyticsError(err as string);
       }
     } catch (error) {
       console.error('Error fetching analytics:', error);
+      setAnalyticsError(error instanceof Error ? error.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -89,7 +96,7 @@ const AdminDashboard: React.FC = () => {
         <button
           onClick={fetchAnalytics}
           disabled={loading}
-          className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
@@ -108,7 +115,7 @@ const AdminDashboard: React.FC = () => {
               onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage')}
               className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === id
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200'
+                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
@@ -118,6 +125,12 @@ const AdminDashboard: React.FC = () => {
           ))}
         </nav>
       </div>
+
+      {analyticsError && (
+        <div className="mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-200 px-4 py-3 rounded">
+          {analyticsError}
+        </div>
+      )}
 
       {activeTab === 'dashboard' && (
         <div className="space-y-8">
@@ -132,10 +145,10 @@ const AdminDashboard: React.FC = () => {
               <>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
                   <div className="flex items-center">
-                    <Users className="h-8 w-8 text-blue-600" />
+                    <Users className="h-8 w-8 text-primary-600" />
                     <div className="ml-4">
                       <h3 className="text-lg font-medium text-gray-900 dark:text-white">Total Surveys</h3>
-                      <p className="text-3xl font-bold text-blue-600">{analytics.totalSurveys}</p>
+                      <p className="text-3xl font-bold text-primary-600">{analytics.totalSurveys}</p>
                     </div>
                   </div>
                 </div>
