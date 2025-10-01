@@ -51,7 +51,8 @@ A comprehensive digital library application for high school students to access p
 3. **Configure Firebase**
    - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
    - Enable Authentication and Firestore
-   - Copy your Firebase config to `src/config/firebase.ts`
+// Firebase has been deprecated in favor of Supabase.
+// Configure Supabase env vars in `.env.local` and see `src/config/supabaseClient.ts`.
 
 4. **Configure GitHub (for PDF uploads)**
    - Option A: Serverless (recommended) – avoids CORS and hides token
@@ -150,7 +151,7 @@ src/
 1. Create a new Firebase project
 2. Enable Authentication (Email/Password)
 3. Enable Firestore Database
-4. Update `src/config/firebase.ts` with your config
+4. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local`
 
 ### GitHub Integration
 
