@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Upload, FileText, TrendingUp, Users, RefreshCw } from 'lucide-react';
-import { getSurveys, getPapers } from '../../services/firestoreService';
+import { getSurveys, getPapers } from '../../services/supabaseService';
 import UploadPaper from './UploadPaper';
 import PaperManagement from './PaperManagement';
 import { SkeletonCard } from '../Common/SkeletonLoader';
@@ -38,9 +38,9 @@ const AdminDashboard: React.FC = () => {
         const subjectCounts: { [key: string]: number } = {};
         const frequencyCounts: { [key: string]: number } = {};
 
-        surveysResult.surveys.forEach(survey => {
+        surveysResult.surveys.forEach((survey: any) => {
           if (survey.subjects && Array.isArray(survey.subjects)) {
-            survey.subjects.forEach(subject => {
+            survey.subjects.forEach((subject: string) => {
               subjectCounts[subject] = (subjectCounts[subject] || 0) + 1;
             });
           }

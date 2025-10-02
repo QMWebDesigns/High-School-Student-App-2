@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle, ArrowRight } from 'lucide-react';
-import { submitSurvey, SurveyData } from '../../services/firestoreService';
+import { submitSurvey, SurveyData } from '../../services/supabaseService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
