@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Download, Users, BookOpen, BarChart3, MessageSquare } from 'lucide-react';
-import { surveys, Survey } from '../services/supabaseService';
+import { getSurveys, SurveyData } from '../../services/supabaseService';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -28,10 +28,9 @@ const AdminAnalytics: React.FC = () => {
   const loadAnalytics = async () => {
     try {
       setLoading(true);
-      const result = await surveys.getSurveys();
-      
-      if (result.data) {
-        const analyticsData = processSurveyData(result.data);
+      const result = await getSurveys();
+      if (result.success) {
+        const analyticsData = processSurveyData(result.surveys);
         setData(analyticsData);
       } else {
         setError(result.error || 'Failed to load analytics data');
@@ -43,17 +42,16 @@ const AdminAnalytics: React.FC = () => {
     }
   };
 
-  const processSurveyData = (surveys: Survey[]): AnalyticsData => {
+  const processSurveyData = (surveys: (SurveyData & { id: string })[]): AnalyticsData => {
     // Filter by time range
     const filteredSurveys = surveys.filter(survey => {
-      const surveyDate = new Date(survey.timestamp);
+      const surveyDate = typeof survey.timestamp === 'string' ? new Date(survey.timestamp) : new Date();
       const now = new Date();
-      
       switch (timeRange) {
         case 'week':
-          return surveyDate > new Date(now.setDate(now.getDate() - 7));
+          return surveyDate > new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         case 'month':
-          return surveyDate > new Date(now.setMonth(now.getMonth() - 1));
+          return surveyDate > new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         default:
           return true;
       }
@@ -62,13 +60,13 @@ const AdminAnalytics: React.FC = () => {
     // Study frequency analysis (Online resource usage)
     const frequencyCount: { [key: string]: number } = {};
     filteredSurveys.forEach(survey => {
-      frequencyCount[survey.study_frequency] = (frequencyCount[survey.study_frequency] || 0) + 1;
+      frequencyCount[survey.studyFrequency] = (frequencyCount[survey.studyFrequency] || 0) + 1;
     });
 
     // Most needed subjects analysis (Question 1)
     const subjectCount: { [key: string]: number } = {};
     filteredSurveys.forEach(survey => {
-      survey.most_needed_subjects?.forEach(subject => {
+      survey.subjects?.forEach(subject => {
         subjectCount[subject] = (subjectCount[subject] || 0) + 1;
       });
     });
@@ -76,28 +74,27 @@ const AdminAnalytics: React.FC = () => {
     // Preferred resources analysis (Question 3)
     const resourceCount: { [key: string]: number } = {};
     filteredSurveys.forEach(survey => {
-      survey.preferred_resources?.forEach(resource => {
+      survey.preferredResources?.forEach(resource => {
         resourceCount[resource] = (resourceCount[resource] || 0) + 1;
       });
     });
 
     // Recent comments (Question 4)
     const recentComments = filteredSurveys
-      .filter(s => s.additional_comments && s.additional_comments.trim().length > 0)
+      .filter(s => s.additionalComments && typeof s.additionalComments === 'string' && s.additionalComments.trim().length > 0)
       .slice(0, 10)
-      .map(s => s.additional_comments as string);
+      .map(s => s.additionalComments as string);
 
     // Survey trends (last 7 days)
     const trends = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
       const dateStr = date.toISOString().split('T')[0];
-      
       const count = filteredSurveys.filter(s => {
-        const surveyDate = new Date(s.timestamp).toISOString().split('T')[0];
+        const ts = typeof s.timestamp === 'string' ? s.timestamp : '';
+        const surveyDate = ts ? new Date(ts).toISOString().split('T')[0] : '';
         return surveyDate === dateStr;
       }).length;
-
       return { date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), count };
     });
 
