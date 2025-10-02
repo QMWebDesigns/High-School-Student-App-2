@@ -12,7 +12,7 @@ const Login: React.FC = () => {
   const [error, setError] = useState('');
   
   const { signIn, signUp } = useAuth();
-  const navigate = useNavigate();
+  
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
