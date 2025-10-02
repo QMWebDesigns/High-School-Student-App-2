@@ -33,7 +33,10 @@ const AppRoutes: React.FC = () => {
     return isUserAdmin ? '/admin' : '/home';
   };
 
-  const hideGlobalNav = location.pathname.startsWith('/admin') || location.pathname.startsWith('/past-papers');
+  // Hide navbar on login, admin, and past-papers pages
+  const hideGlobalNav = location.pathname === '/login' || 
+                       location.pathname.startsWith('/admin') || 
+                       location.pathname.startsWith('/past-papers');
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -95,19 +98,3 @@ const AppRoutes: React.FC = () => {
     </div>
   );
 };
-
-function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
-        </AuthProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
-}
-
-export default App;
