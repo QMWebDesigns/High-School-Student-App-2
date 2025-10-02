@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
-import { getPapers } from '../../services/firestoreService';
+import { getPapers } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
 
 const SUBJECTS = [

@@ -51,7 +51,7 @@ A comprehensive digital library application for high school students to access p
 3. **Configure Firebase**
    - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
    - Enable Authentication and Firestore
-// Firebase has been deprecated in favor of Supabase.
+// Firebase has been removed in favor of Supabase.
 // Configure Supabase env vars in `.env.local` and see `src/config/supabaseClient.ts`.
 
 4. **Configure GitHub (for PDF uploads)**
@@ -101,7 +101,7 @@ src/
 │   └── ThemeContext.tsx # Theme context
 ├── services/
 │   ├── authService.ts  # Authentication service
-│   ├── firestoreService.ts # Firestore operations
+│   ├── supabaseService.ts # Supabase operations
 │   └── githubService.ts # GitHub API integration
 └── App.tsx            # Main application component
 ```

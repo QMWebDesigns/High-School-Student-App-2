@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard as Edit, Trash2, Download, Search } from 'lucide-react';
-import { getPapers, deletePaper, updatePaper } from '../../services/firestoreService';
+import { getPapers, deletePaper, updatePaper } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
 
 interface PaperManagementProps {

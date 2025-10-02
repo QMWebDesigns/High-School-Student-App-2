@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
 import { uploadPDFToGitHub, PaperMetadata } from '../../services/githubService';
-import { savePaperMetadata } from '../../services/firestoreService';
+import { savePaperMetadata } from '../../services/supabaseService';
 
 const SUBJECTS = [
   'Life Sciences',
