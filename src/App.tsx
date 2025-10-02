@@ -97,4 +97,5 @@ const AppRoutes: React.FC = () => {
       </main>
     </div>
   );
-};
+}
+  export default App;
