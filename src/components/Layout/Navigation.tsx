@@ -37,7 +37,7 @@ const Navigation: React.FC = () => {
             <div className="flex items-center">
               <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400" />
               <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
-                Digital High School Library
+                KnowledgeHub
               </span>
               <div className="ml-8 hidden md:flex items-center space-x-4">
                 <NavLink
