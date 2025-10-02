@@ -2,28 +2,28 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
 import type { PaperMetadata } from '../../services/githubService';
-import { SAMPLE_PAPERS } from '../../data/sampleContent';
+import { SAMPLE_PAPERS } from '../../data/sampleContent'; // Updated import
+import { useNavigate } from 'react-router-dom'
+import { papers } from '../../lib/supabase';
 
 const SUBJECTS = [
   'Life Sciences',
   'Physical Sciences', 
   'Geography',
   'Mathematics',
-  'Business Studies',
   'Accounting',
-  'History',
   'Mathematical Literacy'
 ];
 
 const PROVINCES = ['KZN', 'Gauteng'];
 const GRADES = ['10', '11', '12'];
-
-type Paper = (PaperMetadata & { id: string } & { download_url?: string; downloadUrl?: string });
+const EXAM_TYPES = ['Final Exam', 'Mid-year Exam', 'Trial Exam', 'Term 1', 'Term 3'];
 
 const PastPapers: React.FC = () => {
-  const [papers, setPapers] = useState<Paper[]>([]);
-  const [filteredPapers, setFilteredPapers] = useState<Paper[]>([]);
+  const [papersList, setPapersList] = useState<any[]>([]);
+  const [filteredPapers, setFilteredPapers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     grade: '',
@@ -33,42 +33,29 @@ const PastPapers: React.FC = () => {
     year: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('title');
+  const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('year');
   const itemsPerPage = 12;
 
-  const normalizedSample: Paper[] = useMemo(() => {
-    return SAMPLE_PAPERS.map(p => ({
-      ...p,
-      format: 'pdf',
-      identifier: p.id,
-      publisher: p.publisher || 'Department of Education'
-    }));
-  }, []);
-
+  // Fetch papers from Supabase
   const fetchPapers = async () => {
     setLoading(true);
+    setError('');
     try {
-      const result = await getPapers();
-      if (result.success) {
-        const got = (result.papers as Paper[]) || [];
-        if (got.length === 0) {
-          setPapers(normalizedSample);
-        } else {
-          setPapers(got);
-        }
+      const result = await papers.getPapers();
+      if (result.data) {
+        setPapersList(result.data);
       } else {
-        setPapers(normalizedSample);
+        setError(result.error || 'Failed to load papers');
       }
-    } catch {
-      // fall back to sample
-      setPapers(normalizedSample);
+    } catch (err: any) {
+      setError('An error occurred while loading papers');
     } finally {
       setLoading(false);
     }
   };
 
   const applyFilters = useCallback(() => {
-    const filtered = papers.filter((paper: Paper) => {
+    const filtered = papersList.filter((paper) => {
       const title = (paper.title || '').toLowerCase();
       const subject = (paper.subject || '').toLowerCase();
       const description = (paper.description || '').toLowerCase();
@@ -78,21 +65,22 @@ const PastPapers: React.FC = () => {
         description.includes(searchTerm.toLowerCase());
 
       const matchesFilters = 
-        (filters.grade === '' || paper.grade === filters.grade) &&
+        (filters.grade === '' || paper.grade.toString() === filters.grade) &&
         (filters.subject === '' || paper.subject === filters.subject) &&
         (filters.province === '' || paper.province === filters.province) &&
-        (filters.examType === '' || paper.examType === filters.examType) &&
-        (filters.year === '' || String(paper.year) === filters.year);
+        (filters.examType === '' || paper.exam_type === filters.examType) &&
+        (filters.year === '' || paper.year.toString() === filters.year);
 
       return matchesSearch && matchesFilters;
     });
 
-    filtered.sort((a: Paper, b: Paper) => {
+    // Sort papers
+    filtered.sort((a, b) => {
       switch (sortBy) {
         case 'title':
           return (a.title || '').localeCompare(b.title || '');
         case 'year':
-          return parseInt(String(b.year || '0')) - parseInt(String(a.year || '0'));
+          return (b.year || 0) - (a.year || 0); // Newest first
         case 'subject':
           return (a.subject || '').localeCompare(b.subject || '');
         default:
@@ -102,11 +90,10 @@ const PastPapers: React.FC = () => {
 
     setFilteredPapers(filtered);
     setCurrentPage(1);
-  }, [papers, searchTerm, filters, sortBy]);
+  }, [papersList, searchTerm, filters, sortBy]);
 
   useEffect(() => {
     fetchPapers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -114,7 +101,7 @@ const PastPapers: React.FC = () => {
   }, [applyFilters]);
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
-    setFilters((prev: typeof filters) => ({
+    setFilters(prev => ({
       ...prev,
       [key]: value
     }));
@@ -129,6 +116,10 @@ const PastPapers: React.FC = () => {
       year: ''
     });
     setSearchTerm('');
+  };
+
+  const handleDownload = async (paper: any) => {
+    await paper.downloadPaper(paper.id, paper);
   };
 
   const totalPages = Math.ceil(filteredPapers.length / itemsPerPage);
@@ -147,7 +138,7 @@ const PastPapers: React.FC = () => {
             </p>
           </div>
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-400">Loading papers...</p>
           </div>
         </div>
@@ -165,6 +156,12 @@ const PastPapers: React.FC = () => {
           </p>
         </div>
 
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-200 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
             <div className="lg:col-span-2">
@@ -172,7 +169,7 @@ const PastPapers: React.FC = () => {
                 <Search className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search papers..."
+                  placeholder="Search papers by title, subject, or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
@@ -186,8 +183,8 @@ const PastPapers: React.FC = () => {
                 onChange={(e) => setSortBy(e.target.value as 'title' | 'year' | 'subject')}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
+                <option value="year">Newest First</option>
                 <option value="title">Sort by Title</option>
-                <option value="year">Sort by Year</option>
                 <option value="subject">Sort by Subject</option>
               </select>
             </div>
@@ -236,20 +233,25 @@ const PastPapers: React.FC = () => {
               ))}
             </select>
 
-            <input
-              type="text"
-              placeholder="Exam Type"
+            <select
               value={filters.examType}
               onChange={(e) => handleFilterChange('examType', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            />
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="">All Exam Types</option>
+              {EXAM_TYPES.map(type => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
 
             <input
               type="number"
               placeholder="Year"
               value={filters.year}
               onChange={(e) => handleFilterChange('year', e.target.value)}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              min="2000"
+              max="2024"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
         </div>
@@ -258,10 +260,15 @@ const PastPapers: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-400">
             Showing {startIndex + 1}-{Math.min(endIndex, filteredPapers.length)} of {filteredPapers.length} papers
           </p>
+          {papersList.length === 0 && (
+            <p className="text-sm text-orange-600 dark:text-orange-400">
+              No papers found in database
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {currentPapers.map((paper: Paper) => (
+          {currentPapers.map((paper) => (
             <div key={paper.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
@@ -284,20 +291,22 @@ const PastPapers: React.FC = () => {
                   </div>
                   <div className="flex items-center">
                     <Calendar className="h-4 w-4 mr-2" />
-                    {paper.year} • {paper.examType}
+                    {paper.year} • {paper.exam_type}
                   </div>
+                  {paper.download_count > 0 && (
+                    <div className="text-xs text-gray-500 dark:text-gray-500">
+                      {paper.download_count} downloads
+                    </div>
+                  )}
                 </div>
-                {(paper.downloadUrl || paper.download_url) && (
-                  <a
-                    href={(paper.downloadUrl || paper.download_url) as string}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download PDF
-                  </a>
-                )}
+                <button
+                  onClick={() => handleDownload(paper)}
+                  className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!paper.download_url}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  {paper.download_url ? 'Download PDF' : 'No File Available'}
+                </button>
               </div>
             </div>
           ))}
@@ -335,7 +344,7 @@ const PastPapers: React.FC = () => {
           </div>
         )}
 
-        {filteredPapers.length === 0 && (
+        {filteredPapers.length === 0 && papersList.length > 0 && (
           <div className="text-center py-12">
             <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -346,10 +355,27 @@ const PastPapers: React.FC = () => {
             </p>
           </div>
         )}
+
+        {papersList.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              No papers available
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              The paper library is currently empty.
+            </p>
+            <button
+              onClick={fetchPapers}
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+            >
+              Retry Loading
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 export default PastPapers;
-

@@ -8,9 +8,7 @@ const SUBJECTS = [
   'Physical Sciences',
   'Geography',
   'Mathematics',
-  'Business Studies',
   'Accounting',
-  'History',
   'Mathematical Literacy'
 ];
 

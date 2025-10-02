@@ -83,8 +83,8 @@ const Home: React.FC = () => {
     { name: 'Life Sciences', papers: 72, icon: '🧬', gradient: 'from-green-500 to-green-600' },
     { name: 'Physical Sciences', papers: 68, icon: '⚗️', gradient: 'from-purple-500 to-purple-600' },
     { name: 'Geography', papers: 45, icon: '🌍', gradient: 'from-orange-500 to-orange-600' },
-    { name: 'History', papers: 52, icon: '📚', gradient: 'from-red-500 to-red-600' },
-    { name: 'Business Studies', papers: 38, icon: '💼', gradient: 'from-indigo-500 to-indigo-600' }
+    { name: 'Accounting', papers: 52, icon: '📚', gradient: 'from-red-500 to-red-600' },
+    { name: 'Mathematical Literacy', papers: 38, icon: '💼', gradient: 'from-indigo-500 to-indigo-600' }
   ];
 
   return (
