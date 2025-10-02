@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, GraduationCap, Download, Eye } from 'lucide-react';
-import { getStudyGuides as fetchGuidesFromApi, saveStudyGuide as saveGuideToApi, updateStudyGuide as updateGuideInApi, deleteStudyGuide as deleteGuideFromApi } from '../../services/libraryService';
+import { getStudyGuides as fetchGuidesFromApi, saveStudyGuide as saveGuideToApi, updateStudyGuide as updateGuideInApi, deleteStudyGuide as deleteGuideFromApi, uploadGuidePreview, uploadGuideFile } from '../../services/libraryService';
 
 interface StudyGuide {
   id: string;
@@ -130,6 +130,8 @@ const StudyGuideManagement: React.FC = () => {
     });
 
     const [tagInput, setTagInput] = useState('');
+    const [previewFile, setPreviewFile] = useState<File | null>(null);
+    const [guideFile, setGuideFile] = useState<File | null>(null);
 
     const handleAddTag = () => {
       if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
@@ -150,9 +152,32 @@ const StudyGuideManagement: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
+      // Upload selected files
+      let previewUrl = formData.previewUrl || '';
+      if (previewFile && (formData.title || guide?.title)) {
+        const res = await uploadGuidePreview(previewFile, (formData.title || (guide?.title as string) || 'guide'));
+        if (!res.success) {
+          alert(res.error || 'Failed to upload preview');
+          return;
+        }
+        previewUrl = res.publicUrl || '';
+      }
+
+      let downloadUrl = formData.downloadUrl || '';
+      if (guideFile && (formData.title || guide?.title)) {
+        const res = await uploadGuideFile(guideFile, (formData.title || (guide?.title as string) || 'guide'));
+        if (!res.success) {
+          alert(res.error || 'Failed to upload guide file');
+          return;
+        }
+        downloadUrl = res.publicUrl || '';
+      }
+
       const { id: _ignored, ...rest } = (formData as StudyGuide);
       const guideData: StudyGuide = {
         ...rest,
+        previewUrl,
+        downloadUrl,
         id: guide?.id || Date.now().toString()
       };
       await onSave(guideData);
@@ -330,6 +355,28 @@ const StudyGuideManagement: React.FC = () => {
                     value={formData.previewUrl || ''}
                     onChange={(e) => setFormData({...formData, previewUrl: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Preview image (upload)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPreviewFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                    className="w-full text-sm text-gray-600 dark:text-gray-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Guide file (PDF)
+                  </label>
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    onChange={(e) => setGuideFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                    className="w-full text-sm text-gray-600 dark:text-gray-300"
                   />
                 </div>
               </div>

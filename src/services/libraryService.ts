@@ -327,3 +327,69 @@ export const getLibraryStats = async () => {
     };
   }
 };
+
+// Storage helpers
+
+const sanitizePathSegment = (value: string): string => {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
+
+const getFileExtension = (fileName: string): string => {
+  const parts = fileName.split('.');
+  return parts.length > 1 ? parts.pop() as string : '';
+};
+
+const uploadFileToStorage = async (
+  bucket: string,
+  path: string,
+  file: File,
+  upsert: boolean = false
+): Promise<{ success: boolean; publicUrl?: string; path?: string; error?: string }> => {
+  const { error: uploadError } = await supabase.storage
+    .from(bucket)
+    .upload(path, file, { upsert, contentType: file.type });
+
+  if (uploadError) {
+    return { success: false, error: uploadError.message };
+  }
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return { success: true, publicUrl: data.publicUrl, path };
+};
+
+// Public helpers for books
+export const uploadBookCover = async (file: File, title: string) => {
+  const bucket = 'library'; // Ensure this bucket exists in Supabase
+  const slug = sanitizePathSegment(title || 'book');
+  const ext = getFileExtension(file.name) || 'jpg';
+  const path = `books/covers/${slug}-${Date.now()}.${ext}`;
+  return uploadFileToStorage(bucket, path, file, true);
+};
+
+export const uploadBookFile = async (file: File, title: string) => {
+  const bucket = 'library'; // Ensure this bucket exists in Supabase
+  const slug = sanitizePathSegment(title || 'book');
+  const ext = getFileExtension(file.name) || 'pdf';
+  const path = `books/files/${slug}-${Date.now()}.${ext}`;
+  return uploadFileToStorage(bucket, path, file, true);
+};
+
+// Public helpers for study guides
+export const uploadGuidePreview = async (file: File, title: string) => {
+  const bucket = 'library';
+  const slug = sanitizePathSegment(title || 'guide');
+  const ext = getFileExtension(file.name) || 'jpg';
+  const path = `guides/previews/${slug}-${Date.now()}.${ext}`;
+  return uploadFileToStorage(bucket, path, file, true);
+};
+
+export const uploadGuideFile = async (file: File, title: string) => {
+  const bucket = 'library';
+  const slug = sanitizePathSegment(title || 'guide');
+  const ext = getFileExtension(file.name) || 'pdf';
+  const path = `guides/files/${slug}-${Date.now()}.${ext}`;
+  return uploadFileToStorage(bucket, path, file, true);
+};

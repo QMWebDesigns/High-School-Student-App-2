@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Book, Download } from 'lucide-react';
-import { getBooks as fetchBooksFromApi, saveBook as saveBookToApi, updateBook as updateBookInApi, deleteBook as deleteBookFromApi } from '../../services/libraryService';
+import { getBooks as fetchBooksFromApi, saveBook as saveBookToApi, updateBook as updateBookInApi, deleteBook as deleteBookFromApi, uploadBookCover, uploadBookFile } from '../../services/libraryService';
 
 interface Book {
   id: string;
@@ -110,12 +110,37 @@ const BookManagement: React.FC = () => {
       year: new Date().getFullYear().toString(),
       isbn: ''
     });
+    const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [bookFile, setBookFile] = useState<File | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
+      // Upload selected files to storage first
+      let coverImageUrl = formData.coverImage || '';
+      if (coverFile && (formData.title || book?.title)) {
+        const res = await uploadBookCover(coverFile, formData.title || (book?.title as string) || 'book');
+        if (!res.success) {
+          alert(res.error || 'Failed to upload cover image');
+          return;
+        }
+        coverImageUrl = res.publicUrl || '';
+      }
+
+      let downloadUrl = formData.downloadUrl || '';
+      if (bookFile && (formData.title || book?.title)) {
+        const res = await uploadBookFile(bookFile, formData.title || (book?.title as string) || 'book');
+        if (!res.success) {
+          alert(res.error || 'Failed to upload book file');
+          return;
+        }
+        downloadUrl = res.publicUrl || '';
+      }
+
       const { id: _ignored, ...rest } = (formData as Book);
       const bookData: Book = {
         ...rest,
+        coverImage: coverImageUrl,
+        downloadUrl,
         id: book?.id || Date.now().toString()
       };
       await onSave(bookData);
@@ -239,6 +264,28 @@ const BookManagement: React.FC = () => {
                     value={formData.pages || ''}
                     onChange={(e) => setFormData({...formData, pages: parseInt(e.target.value) || 0})}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Cover image (upload)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setCoverFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                    className="w-full text-sm text-gray-600 dark:text-gray-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Book file (PDF)
+                  </label>
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    onChange={(e) => setBookFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                    className="w-full text-sm text-gray-600 dark:text-gray-300"
                   />
                 </div>
               </div>
