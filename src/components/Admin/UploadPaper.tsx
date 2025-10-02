@@ -7,15 +7,13 @@ const SUBJECTS = [
   'Physical Sciences',
   'Geography',
   'Mathematics',
-  'Business Studies',
   'Accounting',
-  'History',
   'Mathematical Literacy'
 ];
 
 const PROVINCES = ['KZN', 'Gauteng']; // Fixed to match your database enum
 const GRADES = ['10', '11', '12'];
-const EXAM_TYPES = ['Mid-Year', 'Final', 'Trial', 'Supplementary'];
+const EXAM_TYPES = ['Mid-Year', 'Final', 'Trial', 'Supplementary', 'Term 1', 'Term 2'];
 
 interface UploadPaperProps {
   onUploadSuccess: () => void;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, GraduationCap, Download, Eye, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, GraduationCap, Download, Eye } from 'lucide-react';
+import { getStudyGuides as fetchGuidesFromApi, saveStudyGuide as saveGuideToApi, updateStudyGuide as updateGuideInApi, deleteStudyGuide as deleteGuideFromApi, uploadGuidePreview, uploadGuideFile } from '../../services/libraryService';
 
 interface StudyGuide {
   id: string;
@@ -34,47 +35,7 @@ const StudyGuideManagement: React.FC = () => {
     difficulty: ''
   });
 
-  // Sample data
-  const sampleGuides: StudyGuide[] = [
-    {
-      id: '1',
-      title: 'Calculus Quick Reference Guide',
-      subject: 'Mathematics',
-      grade: '12',
-      topic: 'Calculus',
-      description: 'Essential calculus formulas, derivatives, and integrals with step-by-step examples.',
-      author: 'Dr. Sarah Johnson',
-      difficulty: 'Advanced',
-      estimatedTime: '2 hours',
-      downloadUrl: '#',
-      previewUrl: '#',
-      rating: 4.8,
-      downloads: 1250,
-      pages: 24,
-      format: 'PDF',
-      lastUpdated: '2024-01-15',
-      tags: ['derivatives', 'integrals', 'limits', 'formulas']
-    },
-    {
-      id: '2',
-      title: 'Photosynthesis Study Guide',
-      subject: 'Life Sciences',
-      grade: '11',
-      topic: 'Plant Biology',
-      description: 'Comprehensive guide to photosynthesis process, light and dark reactions.',
-      author: 'Prof. Michael Chen',
-      difficulty: 'Intermediate',
-      estimatedTime: '1.5 hours',
-      downloadUrl: '#',
-      previewUrl: '#',
-      rating: 4.6,
-      downloads: 980,
-      pages: 18,
-      format: 'PDF',
-      lastUpdated: '2024-01-10',
-      tags: ['photosynthesis', 'chloroplast', 'light reactions', 'Calvin cycle']
-    }
-  ];
+  // Data is loaded from Supabase via libraryService
 
   const SUBJECTS = [
     'Mathematics',
@@ -92,12 +53,16 @@ const StudyGuideManagement: React.FC = () => {
   const FORMATS = ['PDF', 'EPUB', 'Interactive'];
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setGuides(sampleGuides);
-      setFilteredGuides(sampleGuides);
+    const loadGuides = async () => {
+      setLoading(true);
+      const result = await fetchGuidesFromApi();
+      if (result.success) {
+        setGuides(result.guides);
+        setFilteredGuides(result.guides);
+      }
       setLoading(false);
-    }, 1000);
+    };
+    loadGuides();
   }, []);
 
   useEffect(() => {
@@ -120,9 +85,14 @@ const StudyGuideManagement: React.FC = () => {
     setFilteredGuides(filtered);
   }, [guides, searchTerm, filters]);
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this study guide?')) {
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this study guide?')) return;
+    const res = await deleteGuideFromApi(id);
+    if (res.success) {
       setGuides(guides.filter(guide => guide.id !== id));
+      setFilteredGuides(filteredGuides.filter(guide => guide.id !== id));
+    } else {
+      alert(res.error || 'Failed to delete study guide');
     }
   };
 
@@ -160,6 +130,8 @@ const StudyGuideManagement: React.FC = () => {
     });
 
     const [tagInput, setTagInput] = useState('');
+    const [previewFile, setPreviewFile] = useState<File | null>(null);
+    const [guideFile, setGuideFile] = useState<File | null>(null);
 
     const handleAddTag = () => {
       if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
@@ -178,13 +150,37 @@ const StudyGuideManagement: React.FC = () => {
       });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
+      // Upload selected files
+      let previewUrl = formData.previewUrl || '';
+      if (previewFile && (formData.title || guide?.title)) {
+        const res = await uploadGuidePreview(previewFile, (formData.title || (guide?.title as string) || 'guide'));
+        if (!res.success) {
+          alert(res.error || 'Failed to upload preview');
+          return;
+        }
+        previewUrl = res.publicUrl || '';
+      }
+
+      let downloadUrl = formData.downloadUrl || '';
+      if (guideFile && (formData.title || guide?.title)) {
+        const res = await uploadGuideFile(guideFile, (formData.title || (guide?.title as string) || 'guide'));
+        if (!res.success) {
+          alert(res.error || 'Failed to upload guide file');
+          return;
+        }
+        downloadUrl = res.publicUrl || '';
+      }
+
+      const { id: _ignored, ...rest } = (formData as StudyGuide);
       const guideData: StudyGuide = {
-        id: guide?.id || Date.now().toString(),
-        ...formData as StudyGuide
+        ...rest,
+        previewUrl,
+        downloadUrl,
+        id: guide?.id || Date.now().toString()
       };
-      onSave(guideData);
+      await onSave(guideData);
     };
 
     return (
@@ -361,6 +357,28 @@ const StudyGuideManagement: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Preview image (upload)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setPreviewFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                    className="w-full text-sm text-gray-600 dark:text-gray-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Guide file (PDF)
+                  </label>
+                  <input
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    onChange={(e) => setGuideFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                    className="w-full text-sm text-gray-600 dark:text-gray-300"
+                  />
+                </div>
               </div>
               
               <div>
@@ -425,11 +443,30 @@ const StudyGuideManagement: React.FC = () => {
     );
   };
 
-  const handleSave = (guideData: StudyGuide) => {
+  const handleSave = async (guideData: StudyGuide) => {
     if (editingGuide) {
-      setGuides(guides.map(guide => guide.id === guideData.id ? guideData : guide));
+      const { id, ...update } = guideData;
+      const res = await updateGuideInApi(id, update);
+      if (res.success) {
+        const updated = guides.map(g => (g.id === id ? { ...g, ...guideData } : g));
+        setGuides(updated);
+        setFilteredGuides(updated);
+      } else {
+        alert(res.error || 'Failed to update study guide');
+        return;
+      }
     } else {
-      setGuides([...guides, guideData]);
+      const { id: _tempId, ...create } = guideData as Omit<StudyGuide, 'id'> & { id?: string };
+      const res = await saveGuideToApi(create as any);
+      if (res.success) {
+        const created: StudyGuide = { ...(create as StudyGuide), id: String(res.id) };
+        const next = [...guides, created];
+        setGuides(next);
+        setFilteredGuides(next);
+      } else {
+        alert(res.error || 'Failed to create study guide');
+        return;
+      }
     }
     setShowAddModal(false);
     setEditingGuide(null);

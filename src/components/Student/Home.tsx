@@ -83,25 +83,25 @@ const Home: React.FC = () => {
     { name: 'Life Sciences', papers: 72, icon: '🧬', gradient: 'from-green-500 to-green-600' },
     { name: 'Physical Sciences', papers: 68, icon: '⚗️', gradient: 'from-purple-500 to-purple-600' },
     { name: 'Geography', papers: 45, icon: '🌍', gradient: 'from-orange-500 to-orange-600' },
-    { name: 'History', papers: 52, icon: '📚', gradient: 'from-red-500 to-red-600' },
-    { name: 'Business Studies', papers: 38, icon: '💼', gradient: 'from-indigo-500 to-indigo-600' }
+    { name: 'Accounting', papers: 52, icon: '📚', gradient: 'from-red-500 to-red-600' },
+    { name: 'Mathematical Literacy', papers: 38, icon: '💼', gradient: 'from-indigo-500 to-indigo-600' }
   ];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16 md:py-20 xl:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <h1 className="text-4xl md:text-6xl xl:text-7xl 2xl:text-8xl font-bold mb-6 leading-tight max-w-5xl mx-auto">
               Unlock knowledge. Succeed with confidence.
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-blue-100">
+            <p className="text-xl md:text-2xl xl:text-3xl mb-8 text-blue-100 max-w-4xl mx-auto">
               KnowledgeHub — a free digital library for South African high school students.
             </p>
             
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+            <form onSubmit={handleSearch} className="md:max-w-2xl xl:max-w-3xl 2xl:max-w-4xl mx-auto">
               <div className="relative">
                 <Search className="h-6 w-6 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
@@ -146,7 +146,7 @@ const Home: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
             What would you like to explore?
           </h2>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 xl:gap-10">
             {quickActions.map((action, index) => (
               <div
                 key={index}
@@ -175,7 +175,7 @@ const Home: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
             Subjects Available
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-6">
             {featuredSubjects.map((subject, index) => (
               <div
                 key={index}
@@ -215,7 +215,7 @@ const Home: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
               {recentPapers.map(paper => (
                 <div key={paper.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-lg transition-shadow p-6">
                   <div className="flex items-start justify-between mb-3">

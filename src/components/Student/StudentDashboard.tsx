@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, Download, BookOpen, Calendar, MapPin, Notebook, FileText, ArrowRight } from 'lucide-react';
+import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
 import { SAMPLE_PAPERS } from '../../data/sampleContent';
-import { Link } from 'react-router-dom';
-
 import { useLocation } from 'react-router-dom';
 
 
@@ -13,9 +11,7 @@ const SUBJECTS = [
   'Physical Sciences', 
   'Geography',
   'Mathematics',
-  'Business Studies',
   'Accounting',
-  'History',
   'Mathematical Literacy'
 ];
 
@@ -179,53 +175,11 @@ const StudentDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Student Portal</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Quick access to resources for Grades 10–12</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <Link to="/library/papers" className="group bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Past Papers</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Filter by grade and subject</p>
-              </div>
-              <FileText className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <div className="mt-3 inline-flex items-center text-primary-600 dark:text-primary-400 text-sm">
-              Browse papers <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </Link>
-          <Link to="/library/guides" className="group bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Study Guides</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Topic-focused help</p>
-              </div>
-              <Notebook className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <div className="mt-3 inline-flex items-center text-primary-600 dark:text-primary-400 text-sm">
-              Explore guides <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </Link>
-          <Link to="/library/books" className="group bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Books</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Workbooks and readers</p>
-              </div>
-              <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <div className="mt-3 inline-flex items-center text-primary-600 dark:text-primary-400 text-sm">
-              View books <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </Link>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Past Exam Papers</h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Browse and download past papers for Grades 10–12</p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Past Exam Papers</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Browse and download past papers for Grades 10-12
+          </p>
         </div>
 
         {/* Search and Filters */}
