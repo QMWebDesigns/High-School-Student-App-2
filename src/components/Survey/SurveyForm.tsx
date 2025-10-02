@@ -101,13 +101,9 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
       additionalComments: formData.additionalComments // keep camelCase for local state
     };
 
-    // When submitting, map to snake_case
+    // Submit the survey data (the service will handle the mapping)
     try {
-      const result = await submitSurvey({
-        ...surveyData,
-        additionalComments: undefined, // remove camelCase
-        additional_comments: formData.additionalComments // add snake_case for DB
-      });
+      const result = await submitSurvey(surveyData);
       
       if (result.success) {
         setSubmitted(true);

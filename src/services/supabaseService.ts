@@ -126,17 +126,24 @@ export const getSurveys = async () => {
       .select('*')
       .order('timestamp', { ascending: false });
     if (error) throw error;
+    
+    console.log('Raw survey data from database:', data); // Debug log
+    
     const surveys: (SurveyData & { id: string })[] = (data || []).map((row: any) => ({
       id: String(row.id),
-      studentEmail: row.studentEmail,
-      subjects: row.subjects,
-      studyFrequency: row.studyFrequency,
-      preferredResources: row.preferredResources,
-      additionalComments: row.additionalComments,
+      studentEmail: row.student_email, // Fixed: use snake_case from DB
+      subjects: row.most_needed_subjects, // Fixed: use snake_case from DB
+      studyFrequency: row.study_frequency, // Fixed: use snake_case from DB
+      preferredResources: row.preferred_resources, // Fixed: use snake_case from DB
+      additionalComments: row.additional_comments, // Fixed: use snake_case from DB
       timestamp: row.timestamp
     }));
+    
+    console.log('Processed survey data:', surveys); // Debug log
+    
     return { success: true, surveys, error: null };
   } catch (error: unknown) {
+    console.error('Error fetching surveys:', error); // Debug log
     return { success: false, surveys: [], error: error instanceof Error ? error.message : 'An error occurred' };
   }
 };

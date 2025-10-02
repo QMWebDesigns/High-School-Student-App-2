@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Upload, FileText, TrendingUp, Book, GraduationCap } from 'lucide-react';
+import { Upload, FileText, TrendingUp, Book, GraduationCap, Bug } from 'lucide-react';
 import UploadPaper from './UploadPaper';
 import PaperManagement from './PaperManagement';
 import AdminAnalytics from './AdminAnalytics';
 import BookManagement from './BookManagement';
 import StudyGuideManagement from './StudyGuideManagement';
+import SurveyDebug from './SurveyDebug';
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage' | 'books' | 'guides'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage' | 'books' | 'guides' | 'debug'>('dashboard');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -27,11 +28,12 @@ const AdminDashboard: React.FC = () => {
             { id: 'upload', label: 'Upload Paper', icon: Upload },
             { id: 'manage', label: 'Manage Papers', icon: FileText },
             { id: 'books', label: 'Manage Books', icon: Book },
-            { id: 'guides', label: 'Study Guides', icon: GraduationCap }
+            { id: 'guides', label: 'Study Guides', icon: GraduationCap },
+            { id: 'debug', label: 'Debug Surveys', icon: Bug }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage' | 'books' | 'guides')}
+              onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage' | 'books' | 'guides' | 'debug')}
               className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === id
                   ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200'
@@ -50,6 +52,7 @@ const AdminDashboard: React.FC = () => {
       {activeTab === 'manage' && <PaperManagement onDataChange={() => {}} />}
       {activeTab === 'books' && <BookManagement />}
       {activeTab === 'guides' && <StudyGuideManagement />}
+      {activeTab === 'debug' && <SurveyDebug />}
     </div>
   );
 };
