@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, GraduationCap, Download, Eye, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, GraduationCap, Download, Eye } from 'lucide-react';
 
 interface StudyGuide {
   id: string;
@@ -180,9 +180,10 @@ const StudyGuideManagement: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+      const { id: _ignored, ...rest } = (formData as StudyGuide);
       const guideData: StudyGuide = {
-        id: guide?.id || Date.now().toString(),
-        ...formData as StudyGuide
+        ...rest,
+        id: guide?.id || Date.now().toString()
       };
       onSave(guideData);
     };

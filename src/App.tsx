@@ -20,6 +20,7 @@ import LibraryStudyGuides from './components/Library/StudyGuides';
 
 const AppRoutes: React.FC = () => {
   const { currentUser, isUserAdmin, loading } = useAuth();
+  const location = useLocation();
 
   // Show loading screen while checking authentication
   if (loading) {
@@ -32,12 +33,13 @@ const AppRoutes: React.FC = () => {
     return isUserAdmin ? '/admin' : '/home';
   };
 
-  const location = useLocation();
   const hideGlobalNav = location.pathname.startsWith('/admin') || location.pathname.startsWith('/past-papers');
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-300 px-3 py-2 rounded">Skip to content</a>
       {!hideGlobalNav && <Navigation />}
+      <main id="main" role="main">
       <Routes>
         <Route path="/login" element={
           currentUser ? <Navigate to={getDefaultRoute()} replace /> : <Login />
@@ -89,6 +91,7 @@ const AppRoutes: React.FC = () => {
 
         <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
       </Routes>
+      </main>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, BookOpen, Download, Star, Filter, Grid, List } from 'lucide-react';
+import { Search, BookOpen, Download, Star, Grid, List } from 'lucide-react';
 
 interface Book {
   id: string;

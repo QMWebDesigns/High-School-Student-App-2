@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Search, Book, Download, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Book, Download } from 'lucide-react';
 
 interface Book {
   id: string;
@@ -137,9 +137,10 @@ const BookManagement: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
+      const { id: _ignored, ...rest } = (formData as Book);
       const bookData: Book = {
-        id: book?.id || Date.now().toString(),
-        ...formData as Book
+        ...rest,
+        id: book?.id || Date.now().toString()
       };
       onSave(bookData);
     };
