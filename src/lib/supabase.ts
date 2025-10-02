@@ -16,14 +16,14 @@ export interface Paper {
   grade: number;
   subject: string;
   province: 'KZN' | 'Gauteng';
-  exam_type: string;
+  exam_type: string;  // Note: snake_case to match database
   year: number;
   description?: string;
   publisher?: string;
   format: string;
   identifier?: string;
-  file_path: string;
-  download_url: string;
+  file_path: string;      // Must match database
+  download_url: string;   // Must match database  
   file_size?: number;
   download_count: number;
   created_at: string;
@@ -54,7 +54,7 @@ export interface UploadMetadata {
   grade: number;
   subject: string;
   province: 'KZN' | 'Gauteng';
-  examType: string;
+  examType: string;  // Your frontend can use camelCase
   year: number;
   description?: string;
   publisher?: string;
