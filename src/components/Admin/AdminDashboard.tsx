@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Upload, FileText, TrendingUp } from 'lucide-react';
+import { Upload, FileText, TrendingUp, Book, GraduationCap } from 'lucide-react';
 import UploadPaper from './UploadPaper';
 import PaperManagement from './PaperManagement';
 import AdminAnalytics from './AdminAnalytics';
+import BookManagement from './BookManagement';
+import StudyGuideManagement from './StudyGuideManagement';
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage' | 'books' | 'guides'>('dashboard');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -19,15 +21,17 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       <div className="mb-8">
-        <nav className="flex space-x-8">
+        <nav className="flex flex-wrap gap-4">
           {[
             { id: 'dashboard', label: 'Analytics', icon: TrendingUp },
             { id: 'upload', label: 'Upload Paper', icon: Upload },
-            { id: 'manage', label: 'Manage Papers', icon: FileText }
+            { id: 'manage', label: 'Manage Papers', icon: FileText },
+            { id: 'books', label: 'Manage Books', icon: Book },
+            { id: 'guides', label: 'Study Guides', icon: GraduationCap }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage')}
+              onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage' | 'books' | 'guides')}
               className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === id
                   ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200'
@@ -44,6 +48,8 @@ const AdminDashboard: React.FC = () => {
       {activeTab === 'dashboard' && <AdminAnalytics />}
       {activeTab === 'upload' && <UploadPaper onUploadSuccess={() => {}} />}
       {activeTab === 'manage' && <PaperManagement onDataChange={() => {}} />}
+      {activeTab === 'books' && <BookManagement />}
+      {activeTab === 'guides' && <StudyGuideManagement />}
     </div>
   );
 };
