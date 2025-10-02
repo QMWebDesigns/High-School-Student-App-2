@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Moon, Sun, LogOut, BookOpen, Home, Book, FileText, GraduationCap, Menu, X } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, NavLink } from 'react-router-dom';
 import SurveyForm from '../Survey/SurveyForm';
 
 const Navigation: React.FC = () => {
@@ -23,7 +23,7 @@ const Navigation: React.FC = () => {
     }
   }, [isUserAdmin, currentUser, signOut, navigate]);
 
-  const handleSurveySubmit = async (_surveyData: unknown) => {
+  const handleSurveySubmit = async () => {
     await signOut();
     setShowSurvey(false);
     navigate('/login');
@@ -39,6 +39,40 @@ const Navigation: React.FC = () => {
               <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
                 Digital High School Library
               </span>
+              <div className="ml-8 hidden md:flex items-center space-x-4">
+                <NavLink
+                  to="/home"
+                  className={({ isActive }: { isActive: boolean }) => `text-sm px-3 py-2 rounded-md ${isActive ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Home
+                </NavLink>
+                <NavLink
+                  to="/library/papers"
+                  className={({ isActive }: { isActive: boolean }) => `text-sm px-3 py-2 rounded-md ${isActive ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Past Papers
+                </NavLink>
+                <NavLink
+                  to="/library/guides"
+                  className={({ isActive }: { isActive: boolean }) => `text-sm px-3 py-2 rounded-md ${isActive ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Study Guides
+                </NavLink>
+                <NavLink
+                  to="/library/books"
+                  className={({ isActive }: { isActive: boolean }) => `text-sm px-3 py-2 rounded-md ${isActive ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                  Books
+                </NavLink>
+                {currentUser && (
+                  <NavLink
+                    to={isUserAdmin ? '/admin' : '/student'}
+                    className={({ isActive }: { isActive: boolean }) => `text-sm px-3 py-2 rounded-md ${isActive ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'}`}
+                  >
+                    {isUserAdmin ? 'Admin' : 'Student Portal'}
+                  </NavLink>
+                )}
+              </div>
             </div>
 
             {/* Navigation Menu for Students */}

@@ -145,7 +145,7 @@ export const papers = {
       const filePath = `grade-${metadata.grade}/${metadata.subject}/${metadata.year}/${metadata.examType}/${fileName}`;
 
       // Upload file to Supabase Storage
-      const { data: storageData, error: storageError } = await supabase.storage
+      const { error: storageError } = await supabase.storage
         .from('papers')
         .upload(filePath, file, {
           contentType: file.type,
@@ -422,11 +422,11 @@ export const utils = {
     if (!data) return {};
 
     return {
-      grades: [...new Set(data.map(p => p.grade))].sort(),
-      subjects: [...new Set(data.map(p => p.subject))].sort(),
-      provinces: [...new Set(data.map(p => p.province))],
-      examTypes: [...new Set(data.map(p => p.exam_type))].sort(),
-      years: [...new Set(data.map(p => p.year))].sort((a, b) => b - a)
+      grades: [...new Set(data.map((p: any) => p.grade))].sort(),
+      subjects: [...new Set(data.map((p: any) => p.subject))].sort(),
+      provinces: [...new Set(data.map((p: any) => p.province))],
+      examTypes: [...new Set(data.map((p: any) => p.exam_type))].sort(),
+      years: [...new Set(data.map((p: any) => p.year))].sort((a: number, b: number) => b - a)
     };
   },
 
