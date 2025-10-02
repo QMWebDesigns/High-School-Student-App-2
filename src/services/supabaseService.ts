@@ -128,11 +128,11 @@ export const getSurveys = async () => {
     if (error) throw error;
     const surveys: (SurveyData & { id: string })[] = (data || []).map((row: any) => ({
       id: String(row.id),
-      studentEmail: row.studentEmail,
-      subjects: row.subjects,
-      studyFrequency: row.studyFrequency,
-      preferredResources: row.preferredResources,
-      additionalComments: row.additionalComments,
+      studentEmail: row.student_email ?? row.studentEmail,
+      subjects: row.most_needed_subjects ?? row.subjects,
+      studyFrequency: row.study_frequency ?? row.studyFrequency,
+      preferredResources: row.preferred_resources ?? row.preferredResources,
+      additionalComments: row.additional_comments ?? row.additionalComments,
       timestamp: row.timestamp
     }));
     return { success: true, surveys, error: null };
