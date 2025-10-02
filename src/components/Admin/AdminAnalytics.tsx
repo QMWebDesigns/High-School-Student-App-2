@@ -1,6 +1,6 @@
 // components/AdminAnalytics.tsx
 import React, { useState, useEffect } from 'react';
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Download, Users, BookOpen, BarChart3, MessageSquare } from 'lucide-react';
 import { getSurveys, SurveyData } from '../../services/supabaseService';
 
@@ -35,7 +35,7 @@ const AdminAnalytics: React.FC = () => {
       } else {
         setError(result.error || 'Failed to load analytics data');
       }
-    } catch (err) {
+    } catch {
       setError('An error occurred while loading analytics');
     } finally {
       setLoading(false);
@@ -145,9 +145,9 @@ const AdminAnalytics: React.FC = () => {
     const headers = ['Metric', 'Value'];
     const csvData = [
       ['Total Surveys', data.totalSurveys],
-      ...data.studyFrequency.map(item => [`Online Study Frequency - ${item.frequency}`, item.count]),
-      ...data.mostNeededSubjects.map(item => [`Most Needed Subject - ${item.subject}`, item.count]),
-      ...data.preferredResources.map(item => [`Preferred Resource - ${item.resource}`, item.count])
+      ...data.studyFrequency.map((item: { frequency: string; count: number }) => [`Online Study Frequency - ${item.frequency}`, item.count]),
+      ...data.mostNeededSubjects.map((item: { subject: string; count: number }) => [`Most Needed Subject - ${item.subject}`, item.count]),
+      ...data.preferredResources.map((item: { resource: string; count: number }) => [`Preferred Resource - ${item.resource}`, item.count])
     ];
 
     const csvContent = [headers, ...csvData].map(row => row.join(',')).join('\n');
@@ -211,7 +211,7 @@ const AdminAnalytics: React.FC = () => {
           <div className="flex space-x-4">
             <select
               value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value as any)}
+              onChange={(e) => setTimeRange(e.target.value as 'week' | 'month' | 'all')}
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             >
               <option value="week">Last Week</option>
@@ -289,12 +289,12 @@ const AdminAnalytics: React.FC = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ frequency, percent }) => `${frequency} (${(percent * 100).toFixed(0)}%)`}
+                  label={(props: any) => `${props.frequency} (${((props.percent || 0) * 100).toFixed(0)}%)`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="count"
                 >
-                  {data.studyFrequency.map((entry, index) => (
+                  {data.studyFrequency.map((_entry: { frequency: string; count: number }, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -359,7 +359,7 @@ const AdminAnalytics: React.FC = () => {
               Student Comments & Suggestions
             </h3>
             <div className="space-y-4 max-h-96 overflow-y-auto">
-              {data.recentComments.map((comment, index) => (
+              {data.recentComments.map((comment: string, index: number) => (
                 <div key={index} className="border-l-4 border-blue-500 pl-4 py-2 bg-gray-50 dark:bg-gray-700 rounded">
                   <p className="text-gray-700 dark:text-gray-300 italic">"{comment}"</p>
                 </div>

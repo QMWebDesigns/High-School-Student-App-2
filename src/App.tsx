@@ -11,6 +11,10 @@ import ProtectedRoute from './components/Common/ProtectedRoute';
 import LoadingScreen from './components/Common/LoadingScreen';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import StyleGuide from './components/StyleGuide';
+import Home from './components/Home/Home';
+import PastPapers from './components/Library/PastPapers';
+import Books from './components/Library/Books';
+import StudyGuides from './components/Library/StudyGuides';
 
 const AppRoutes: React.FC = () => {
   const { currentUser, isUserAdmin, loading } = useAuth();
@@ -30,6 +34,7 @@ const AppRoutes: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Navigation />
       <Routes>
+        <Route path="/home" element={<Home />} />
         <Route path="/login" element={
           currentUser ? <Navigate to={getDefaultRoute()} replace /> : <Login />
         } />
@@ -45,6 +50,9 @@ const AppRoutes: React.FC = () => {
             <StudentDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/library/papers" element={<PastPapers />} />
+        <Route path="/library/books" element={<Books />} />
+        <Route path="/library/guides" element={<StudyGuides />} />
         
         <Route path="/survey" element={<SurveyForm />} />
         <Route path="/style-guide" element={<StyleGuide />} />

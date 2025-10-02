@@ -98,16 +98,12 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
       subjects: formData.subjects,
       studyFrequency: formData.studyFrequency,
       preferredResources: formData.preferredResources,
-      additionalComments: formData.additionalComments // keep camelCase for local state
+      additionalComments: formData.additionalComments
     };
 
     // When submitting, map to snake_case
     try {
-      const result = await submitSurvey({
-        ...surveyData,
-        additionalComments: undefined, // remove camelCase
-        additional_comments: formData.additionalComments // add snake_case for DB
-      });
+      const result = await submitSurvey(surveyData);
       
       if (result.success) {
         setSubmitted(true);

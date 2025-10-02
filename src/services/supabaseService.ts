@@ -97,16 +97,16 @@ export const getPapers = async (useCache: boolean = true) => {
     const papers: (PaperMetadata & { id: string })[] = (data || []).map((row: any) => ({
       id: String(row.id),
       title: row.title,
-      grade: row.grade,
+      grade: String(row.grade ?? ''),
       subject: row.subject,
       province: row.province,
-      examType: row.examType,
-      year: row.year,
-      description: row.description,
-      publisher: row.publisher,
-      format: row.format,
-      identifier: row.identifier,
-      download_url: row.download_url
+      examType: row.exam_type ?? row.examType,
+      year: String(row.year ?? ''),
+      description: row.description ?? '',
+      publisher: row.publisher ?? '',
+      format: row.format ?? 'pdf',
+      identifier: row.identifier ?? '',
+      downloadUrl: row.download_url ?? row.downloadUrl
     }));
 
     // Update cache
