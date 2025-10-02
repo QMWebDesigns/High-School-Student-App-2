@@ -10,12 +10,32 @@
   ],
   "routes": [
     {
+      "src": "/_next/static/(.*)",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*\.js|.*\.css|.*\.wasm)",
+      "dest": "/$1",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
   ],
-  "env": {
-    "VITE_SUPABASE_URL": "https://yruyqwwttajrhewbqvwg.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlydXlxd3d0dGFqcmhld2JxdndnIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTkzNTM4NzgsImV4cCI6MjA3NDkyOTg3OH0.qm-3IkHsv-zbyJBsTm4VkDI_qW2iio6uIr0rc52DXUA"
-  }
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ]
 }
