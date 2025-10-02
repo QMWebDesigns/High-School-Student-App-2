@@ -94,10 +94,10 @@ const Home: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Welcome to Your Digital Library
+              Unlock knowledge. Succeed with confidence.
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100">
-              Access thousands of educational resources for Grades 10-12
+              KnowledgeHub — a free digital library for South African high school students.
             </p>
             
             {/* Search Bar */}
@@ -249,6 +249,29 @@ const Home: React.FC = () => {
               </p>
             </div>
           )}
+        </div>
+
+        {/* About KnowledgeHub */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-8 mb-12 shadow-sm">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">About KnowledgeHub</h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">
+            Empowering high school students in South Africa with a digital library that fosters academic
+            excellence, promotes lifelong learning, and bridges the knowledge gap.
+          </p>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Easy access</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Educational resources and research materials at your fingertips.</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Academic excellence</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Support better learning outcomes with past papers and guides.</p>
+            </div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Bridge the gap</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Promote digital literacy and equitable resource access.</p>
+            </div>
+          </div>
         </div>
 
         {/* Study Tips */}
