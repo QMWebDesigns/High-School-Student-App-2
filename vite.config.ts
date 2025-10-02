@@ -5,15 +5,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
-    exclude: ['lucide-react'],
-    include: ['firebase/app', 'firebase/auth', 'firebase/firestore']
+    exclude: ['lucide-react']
   },
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           charts: ['recharts', 'chart.js', 'react-chartjs-2'],
           router: ['react-router-dom']
         }
