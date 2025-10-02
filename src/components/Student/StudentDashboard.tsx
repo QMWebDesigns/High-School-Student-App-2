@@ -38,6 +38,7 @@ const StudentDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('title');
   const itemsPerPage = 12;
+
   const normalizedSample = useMemo(() => SAMPLE_PAPERS.map((p) => ({
     id: p.id,
     title: p.title,
