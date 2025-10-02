@@ -1,15 +1,4 @@
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  doc, 
-  updateDoc, 
-  deleteDoc,
-  serverTimestamp,
-  query,
-  orderBy
-} from "firebase/firestore";
-import { db } from "../config/firebase";
+import { supabase } from '../config/supabaseClient';
 import { PaperMetadata } from "./githubService";
 
 // Cache for papers to improve performance
@@ -28,11 +17,11 @@ export interface SurveyData {
 
 export const submitSurvey = async (data: SurveyData) => {
   try {
-    await addDoc(collection(db, "surveys"), {
+    const { error } = await supabase.from('surveys').insert({
       ...data,
-      timestamp: serverTimestamp()
+      timestamp: new Date().toISOString()
     });
-    return { success: true, error: null };
+    return { success: !error, error: error ? error.message : null };
   } catch (error: unknown) {
     return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
   }
@@ -40,16 +29,17 @@ export const submitSurvey = async (data: SurveyData) => {
 
 export const savePaperMetadata = async (metadata: PaperMetadata) => {
   try {
-    const docRef = await addDoc(collection(db, "papers"), {
+    const { data, error } = await supabase.from('papers').insert({
       ...metadata,
-      createdAt: serverTimestamp()
-    });
+      created_at: new Date().toISOString()
+    }).select('id').single();
     
     // Invalidate cache when new paper is added
     papersCache = null;
     papersCacheTimestamp = null;
     
-    return { success: true, id: docRef.id, error: null };
+    if (error) return { success: false, id: undefined as unknown as string, error: error.message };
+    return { success: true, id: data.id as unknown as string, error: null };
   } catch (error: unknown) {
     return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
   }
@@ -63,12 +53,25 @@ export const getPapers = async (useCache: boolean = true) => {
       return { success: true, papers: papersCache, error: null };
     }
 
-    const q = query(collection(db, "papers"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    const papers: (PaperMetadata & { id: string })[] = [];
-    querySnapshot.forEach((doc) => {
-      papers.push({ id: doc.id, ...doc.data() } as PaperMetadata & { id: string });
-    });
+    const { data, error } = await supabase
+      .from('papers')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    const papers: (PaperMetadata & { id: string })[] = (data || []).map((row: any) => ({
+      id: String(row.id),
+      title: row.title,
+      grade: row.grade,
+      subject: row.subject,
+      province: row.province,
+      examType: row.examType,
+      year: row.year,
+      description: row.description,
+      publisher: row.publisher,
+      format: row.format,
+      identifier: row.identifier,
+      downloadUrl: row.downloadUrl
+    }));
     
     // Update cache
     papersCache = papers;
@@ -82,12 +85,20 @@ export const getPapers = async (useCache: boolean = true) => {
 
 export const getSurveys = async () => {
   try {
-    const q = query(collection(db, "surveys"), orderBy("timestamp", "desc"));
-    const querySnapshot = await getDocs(q);
-    const surveys: (SurveyData & { id: string })[] = [];
-    querySnapshot.forEach((doc) => {
-      surveys.push({ id: doc.id, ...doc.data() } as SurveyData & { id: string });
-    });
+    const { data, error } = await supabase
+      .from('surveys')
+      .select('*')
+      .order('timestamp', { ascending: false });
+    if (error) throw error;
+    const surveys: (SurveyData & { id: string })[] = (data || []).map((row: any) => ({
+      id: String(row.id),
+      studentEmail: row.studentEmail,
+      subjects: row.subjects,
+      studyFrequency: row.studyFrequency,
+      preferredResources: row.preferredResources,
+      additionalComments: row.additionalComments,
+      timestamp: row.timestamp
+    }));
     return { success: true, surveys, error: null };
   } catch (error: unknown) {
     return { success: false, surveys: [], error: error instanceof Error ? error.message : 'An error occurred' };
@@ -96,7 +107,8 @@ export const getSurveys = async () => {
 
 export const updatePaper = async (id: string, metadata: Partial<PaperMetadata>) => {
   try {
-    await updateDoc(doc(db, "papers", id), metadata);
+    const { error } = await supabase.from('papers').update(metadata).eq('id', id);
+    if (error) throw error;
     
     // Invalidate cache when paper is updated
     papersCache = null;
@@ -110,7 +122,8 @@ export const updatePaper = async (id: string, metadata: Partial<PaperMetadata>) 
 
 export const deletePaper = async (id: string) => {
   try {
-    await deleteDoc(doc(db, "papers", id));
+    const { error } = await supabase.from('papers').delete().eq('id', id);
+    if (error) throw error;
     
     // Invalidate cache when paper is deleted
     papersCache = null;

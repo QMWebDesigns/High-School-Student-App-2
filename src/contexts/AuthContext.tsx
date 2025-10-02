@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '../config/supabaseClient';
 import { isAdmin } from '../services/authService';
 
 interface AuthContextType {
@@ -28,20 +28,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setIsUserAdmin(user ? isAdmin(user.email) : false);
+    let isMounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!isMounted) return;
+      setCurrentUser(data.user ?? null);
+      setIsUserAdmin(data.user ? isAdmin(data.user.email ?? null) : false);
       setLoading(false);
+    })();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session: Session | null) => {
+      const user = session?.user ?? null;
+      setCurrentUser(user);
+      setIsUserAdmin(user ? isAdmin(user.email ?? null) : false);
     });
 
-    return unsubscribe;
+    return () => {
+      isMounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { signInWithEmailAndPassword } = await import('firebase/auth');
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return { user: userCredential.user, error: null };
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return { user: null, error: error.message };
+      return { user: data.user, error: null };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       console.error('Sign in error:', errorMessage);
@@ -51,9 +63,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string) => {
     try {
-      const { createUserWithEmailAndPassword } = await import('firebase/auth');
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      return { user: userCredential.user, error: null };
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) return { user: null, error: error.message };
+      return { user: data.user, error: null };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       console.error('Sign up error:', errorMessage);
@@ -63,9 +75,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      const { signOut: firebaseSignOut } = await import('firebase/auth');
-      await firebaseSignOut(auth);
-      return { error: null };
+      const { error } = await supabase.auth.signOut();
+      return { error: error ? error.message : null };
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       console.error('Sign out error:', errorMessage);

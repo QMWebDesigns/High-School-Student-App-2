@@ -218,7 +218,7 @@ const AdminDashboard: React.FC = () => {
                         cy="50%"
                         outerRadius={80}
                         fill="#8884d8"
-                        label={(props: { frequency: string; percent: number }) => `${props.frequency} (${(props.percent * 100).toFixed(0)}%)`}
+                        label
                       >
                         {frequencyData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
