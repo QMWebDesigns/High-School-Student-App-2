@@ -31,7 +31,7 @@ const Navigation: React.FC = () => {
 
   return (
     <>
-      <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <nav className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700" role="navigation" aria-label="Global">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
@@ -131,6 +131,9 @@ const Navigation: React.FC = () => {
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  aria-expanded={mobileMenuOpen}
+                  aria-controls="mobile-menu"
+                  aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
                 >
                   {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                 </button>
@@ -165,7 +168,7 @@ const Navigation: React.FC = () => {
 
         {/* Mobile Navigation Menu */}
         {currentUser && !isUserAdmin && mobileMenuOpen && (
-          <div className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+          <div id="mobile-menu" className="md:hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700" role="region" aria-label="Mobile menu">
             <div className="px-4 py-3 space-y-2">
               <button
                 onClick={() => {

@@ -36,13 +36,10 @@ export const signOutUser = async () => {
   }
 };
 
-export const getCurrentUser = (): Promise<User | null> => {
-  return new Promise(async (resolve) => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) {
-      resolve(null);
-      return;
-    }
-    resolve(data.user ?? null);
-  });
+export const getCurrentUser = async (): Promise<User | null> => {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    return null;
+  }
+  return data.user ?? null;
 };
