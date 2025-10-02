@@ -126,11 +126,18 @@ const Home: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Library Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-          {libraryStats.map((stat, index) => (
+          {libraryStats.map((stat, index) => {
+            const colorClasses = {
+              blue: 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400',
+              green: 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400',
+              purple: 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400',
+              orange: 'bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400'
+            };
+            return (
             <div key={index} className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
               <div className="flex items-center">
-                <div className={`p-3 rounded-lg bg-${stat.color}-100 dark:bg-${stat.color}-900`}>
-                  <stat.icon className={`h-6 w-6 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+                <div className={`p-3 rounded-lg ${colorClasses[stat.color as keyof typeof colorClasses]?.split(' ').slice(0, 2).join(' ') || 'bg-blue-100 dark:bg-blue-900'}`}>
+                  <stat.icon className={`h-6 w-6 ${colorClasses[stat.color as keyof typeof colorClasses]?.split(' ').slice(2).join(' ') || 'text-blue-600 dark:text-blue-400'}`} />
                 </div>
                 <div className="ml-4">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
@@ -138,7 +145,8 @@ const Home: React.FC = () => {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Quick Actions */}
@@ -147,14 +155,20 @@ const Home: React.FC = () => {
             What would you like to explore?
           </h2>
           <div className="grid md:grid-cols-3 gap-8 xl:gap-10">
-            {quickActions.map((action, index) => (
+            {quickActions.map((action, index) => {
+              const actionColorClasses = {
+                blue: 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400',
+                green: 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400',
+                purple: 'bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400'
+              };
+              return (
               <div
                 key={index}
                 onClick={action.action}
                 className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm hover:shadow-lg transition-all cursor-pointer group"
               >
-                <div className={`p-4 rounded-lg bg-${action.color}-100 dark:bg-${action.color}-900 w-fit mb-4`}>
-                  <action.icon className={`h-8 w-8 text-${action.color}-600 dark:text-${action.color}-400`} />
+                <div className={`p-4 rounded-lg w-fit mb-4 ${actionColorClasses[action.color as keyof typeof actionColorClasses]?.split(' ').slice(0, 2).join(' ') || 'bg-blue-100 dark:bg-blue-900'}`}>
+                  <action.icon className={`h-8 w-8 ${actionColorClasses[action.color as keyof typeof actionColorClasses]?.split(' ').slice(2).join(' ') || 'text-blue-600 dark:text-blue-400'}`} />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {action.title}
@@ -166,7 +180,8 @@ const Home: React.FC = () => {
                   Explore <ChevronRight className="h-4 w-4 ml-1" />
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
