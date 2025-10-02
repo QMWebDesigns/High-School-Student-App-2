@@ -22,7 +22,7 @@ const Navigation: React.FC = () => {
     }
   }, [isUserAdmin, currentUser, signOut, navigate]);
 
-  const handleSurveySubmit = async (surveyData) => {
+  const handleSurveySubmit = async (_surveyData: unknown) => {
     await signOut();
     setShowSurvey(false);
     navigate('/login');

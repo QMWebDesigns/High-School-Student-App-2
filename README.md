@@ -51,16 +51,20 @@ A comprehensive digital library application for high school students to access p
 3. **Configure Firebase**
    - Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
    - Enable Authentication and Firestore
-   - Copy your Firebase config to `src/config/firebase.ts`
+// Firebase has been deprecated in favor of Supabase.
+// Configure Supabase env vars in `.env.local` and see `src/config/supabaseClient.ts`.
 
 4. **Configure GitHub (for PDF uploads)**
-   - Create a GitHub Personal Access Token (classic) with `repo` scope
-   - Copy `.env.example` to `.env.local` and fill:
-     ```bash
-     VITE_GITHUB_TOKEN=ghp_your_token_here
-     VITE_GITHUB_REPO=QMWebDesigns/High-School-Student-App-2
-     VITE_GITHUB_BRANCH=main
-     ```
+   - Option A: Serverless (recommended) – avoids CORS and hides token
+     - On Netlify, set env vars: `GITHUB_TOKEN`, `GITHUB_REPO`, `GITHUB_BRANCH`
+     - In app env, set `VITE_UPLOAD_PROXY_URL=https://<your-site>.netlify.app`
+   - Option B: Client-side (dev/testing)
+     - Copy `.env.example` to `.env.local` and set:
+       ```bash
+       VITE_GITHUB_TOKEN=ghp_your_token_here
+       VITE_GITHUB_REPO=QMWebDesigns/High-School-Student-App-2
+       VITE_GITHUB_BRANCH=main
+       ```
 
 5. **Set up environment variables**
    ```bash
@@ -147,7 +151,7 @@ src/
 1. Create a new Firebase project
 2. Enable Authentication (Email/Password)
 3. Enable Firestore Database
-4. Update `src/config/firebase.ts` with your config
+4. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local`
 
 ### GitHub Integration
 

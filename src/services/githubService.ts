@@ -27,12 +27,26 @@ export interface PaperMetadata {
 
 export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Promise<{ success: boolean; downloadUrl?: string; error?: string }> => {
   try {
-    // Check if GitHub token is configured
+    // If serverless proxy is available, prefer it (avoids CORS and hides token)
+    const proxyUrl = (import.meta as any).env?.VITE_UPLOAD_PROXY_URL as string | undefined;
+    if (proxyUrl) {
+      const base64 = await fileToBase64(file);
+      const proxyRes = await fetch(`${proxyUrl}/.netlify/functions/upload-github`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metadata, base64Content: base64, fileName: file.name })
+      });
+      if (!proxyRes.ok) {
+        const data = await proxyRes.json().catch(() => ({}));
+        return { success: false, error: data?.error || `Proxy error ${proxyRes.status}` };
+      }
+      const data = await proxyRes.json();
+      return { success: true, downloadUrl: data.downloadUrl };
+    }
+
+    // Direct-to-GitHub fallback (requires client-side token and CORS)
     if (!GITHUB_TOKEN) {
-      return {
-        success: false,
-        error: "GitHub token not configured. Set VITE_GITHUB_TOKEN in your environment."
-      };
+      return { success: false, error: "GitHub token not configured. Set VITE_GITHUB_TOKEN or use serverless proxy." };
     }
 
     // Validate file size (max 25MB for GitHub)

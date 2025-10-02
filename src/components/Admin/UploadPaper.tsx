@@ -152,6 +152,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
   };
 
   const tokenMissing = !(import.meta as any).env?.VITE_GITHUB_TOKEN;
+  const proxyConfigured = Boolean((import.meta as any).env?.VITE_UPLOAD_PROXY_URL);
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -160,7 +161,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
           Upload New Paper
         </h2>
 
-        {tokenMissing && (
+        {tokenMissing && !proxyConfigured && (
           <div className="mb-6 bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-md p-4 text-yellow-800 dark:text-yellow-200">
             GitHub token is not configured. Set <code className="px-1 py-0.5 bg-yellow-100 dark:bg-yellow-800 rounded">VITE_GITHUB_TOKEN</code>, <code className="px-1 py-0.5 bg-yellow-100 dark:bg-yellow-800 rounded">VITE_GITHUB_REPO</code> and <code className="px-1 py-0.5 bg-yellow-100 dark:bg-yellow-800 rounded">VITE_GITHUB_BRANCH</code> in your environment.
           </div>
