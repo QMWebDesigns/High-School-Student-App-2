@@ -32,7 +32,8 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
     const proxyUrl = proxyUrlRaw ? proxyUrlRaw.replace(/\/+$/, '') : undefined;
     if (proxyUrl) {
       const base64 = await fileToBase64(file);
-      const proxyRes = await fetch(`${proxyUrl}/.netlify/functions/upload-github`, {
+      // Change from Netlify function to Vercel API route
+      const proxyRes = await fetch('/api/upload-github', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metadata, base64Content: base64, fileName: file.name })
