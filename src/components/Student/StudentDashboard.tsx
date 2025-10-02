@@ -14,7 +14,7 @@ const SUBJECTS = [
   'Mathematical Literacy'
 ];
 
-const PROVINCES = ['KwaZulu-Natal', 'Gauteng'];
+const PROVINCES = ['KZN', 'Gauteng'];
 const GRADES = ['10', '11', '12'];
 
 const StudentDashboard: React.FC = () => {
