@@ -6,18 +6,17 @@ import Navigation from './components/Layout/Navigation';
 import Login from './components/Auth/Login';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import StudentDashboard from './components/Student/StudentDashboard';
-import Home from './components/Student/Home';
-import Books from './components/Student/Books';
-import StudyGuides from './components/Student/StudyGuides';
+import StudentHome from './components/Student/Home';
+import StudentBooks from './components/Student/Books';
+import StudentStudyGuides from './components/Student/StudyGuides';
 import SurveyForm from './components/Survey/SurveyForm';
 import ProtectedRoute from './components/Common/ProtectedRoute';
 import LoadingScreen from './components/Common/LoadingScreen';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import StyleGuide from './components/StyleGuide';
-import Home from './components/Home/Home';
-import PastPapers from './components/Library/PastPapers';
-import Books from './components/Library/Books';
-import StudyGuides from './components/Library/StudyGuides';
+import LibraryPastPapers from './components/Library/PastPapers';
+import LibraryBooks from './components/Library/Books';
+import LibraryStudyGuides from './components/Library/StudyGuides';
 
 const AppRoutes: React.FC = () => {
   const { currentUser, isUserAdmin, loading } = useAuth();
@@ -37,54 +36,54 @@ const AppRoutes: React.FC = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Navigation />
       <Routes>
-        <Route path="/home" element={<Home />} />
         <Route path="/login" element={
           currentUser ? <Navigate to={getDefaultRoute()} replace /> : <Login />
         } />
-        
+
         <Route path="/admin" element={
           <ProtectedRoute requireAdmin>
             <AdminDashboard />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/home" element={
           <ProtectedRoute>
-            <Home />
+            <StudentHome />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/books" element={
           <ProtectedRoute>
-            <Books />
+            <StudentBooks />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/study-guides" element={
           <ProtectedRoute>
-            <StudyGuides />
+            <StudentStudyGuides />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/past-papers" element={
           <ProtectedRoute>
             <StudentDashboard />
           </ProtectedRoute>
         } />
-        <Route path="/library/papers" element={<PastPapers />} />
-        <Route path="/library/books" element={<Books />} />
-        <Route path="/library/guides" element={<StudyGuides />} />
-        
+
+        <Route path="/library/papers" element={<LibraryPastPapers />} />
+        <Route path="/library/books" element={<LibraryBooks />} />
+        <Route path="/library/guides" element={<LibraryStudyGuides />} />
+
         {/* Legacy route for compatibility */}
         <Route path="/student" element={
           <ProtectedRoute>
             <Navigate to="/home" replace />
           </ProtectedRoute>
         } />
-        
+
         <Route path="/survey" element={<SurveyForm />} />
         <Route path="/style-guide" element={<StyleGuide />} />
-        
+
         <Route path="/" element={<Navigate to={getDefaultRoute()} replace />} />
       </Routes>
     </div>
