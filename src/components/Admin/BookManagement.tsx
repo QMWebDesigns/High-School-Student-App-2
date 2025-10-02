@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Search, Book, Download } from 'lucide-react';
+import { getBooks as fetchBooksFromApi, saveBook as saveBookToApi, updateBook as updateBookInApi, deleteBook as deleteBookFromApi } from '../../services/libraryService';
 
 interface Book {
   id: string;
@@ -31,41 +32,7 @@ const BookManagement: React.FC = () => {
     format: ''
   });
 
-  // Sample data - in production, fetch from database
-  const sampleBooks: Book[] = [
-    {
-      id: '1',
-      title: 'Mathematics Grade 12 Textbook',
-      author: 'Dr. Sarah Johnson',
-      subject: 'Mathematics',
-      grade: '12',
-      description: 'Comprehensive mathematics textbook covering all Grade 12 curriculum requirements.',
-      coverImage: '/api/placeholder/300/400',
-      downloadUrl: '#',
-      rating: 4.8,
-      pages: 456,
-      format: 'PDF',
-      publisher: 'Educational Publishers',
-      year: '2024',
-      isbn: '978-0-123456-78-9'
-    },
-    {
-      id: '2',
-      title: 'Life Sciences: Living Systems',
-      author: 'Prof. Michael Chen',
-      subject: 'Life Sciences',
-      grade: '11',
-      description: 'Explore the complexity of living systems with detailed illustrations.',
-      coverImage: '/api/placeholder/300/400',
-      downloadUrl: '#',
-      rating: 4.6,
-      pages: 389,
-      format: 'PDF',
-      publisher: 'Science Education Press',
-      year: '2024',
-      isbn: '978-0-123456-79-0'
-    }
-  ];
+  // Data is loaded from Supabase via libraryService
 
   const SUBJECTS = [
     'Mathematics',
@@ -82,12 +49,16 @@ const BookManagement: React.FC = () => {
   const FORMATS = ['PDF', 'EPUB', 'Interactive'];
 
   useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setBooks(sampleBooks);
-      setFilteredBooks(sampleBooks);
+    const loadBooks = async () => {
+      setLoading(true);
+      const result = await fetchBooksFromApi();
+      if (result.success) {
+        setBooks(result.books);
+        setFilteredBooks(result.books);
+      }
       setLoading(false);
-    }, 1000);
+    };
+    loadBooks();
   }, []);
 
   useEffect(() => {
@@ -108,9 +79,14 @@ const BookManagement: React.FC = () => {
     setFilteredBooks(filtered);
   }, [books, searchTerm, filters]);
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this book?')) {
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this book?')) return;
+    const res = await deleteBookFromApi(id);
+    if (res.success) {
       setBooks(books.filter(book => book.id !== id));
+      setFilteredBooks(filteredBooks.filter(book => book.id !== id));
+    } else {
+      alert(res.error || 'Failed to delete book');
     }
   };
 
@@ -135,14 +111,14 @@ const BookManagement: React.FC = () => {
       isbn: ''
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
       const { id: _ignored, ...rest } = (formData as Book);
       const bookData: Book = {
         ...rest,
         id: book?.id || Date.now().toString()
       };
-      onSave(bookData);
+      await onSave(bookData);
     };
 
     return (
@@ -325,11 +301,30 @@ const BookManagement: React.FC = () => {
     );
   };
 
-  const handleSave = (bookData: Book) => {
+  const handleSave = async (bookData: Book) => {
     if (editingBook) {
-      setBooks(books.map(book => book.id === bookData.id ? bookData : book));
+      const { id, ...update } = bookData;
+      const res = await updateBookInApi(id, update);
+      if (res.success) {
+        const updated = books.map(b => (b.id === id ? { ...b, ...bookData } : b));
+        setBooks(updated);
+        setFilteredBooks(updated);
+      } else {
+        alert(res.error || 'Failed to update book');
+        return;
+      }
     } else {
-      setBooks([...books, bookData]);
+      const { id: _tempId, ...create } = bookData as Omit<Book, 'id'> & { id?: string };
+      const res = await saveBookToApi(create as any);
+      if (res.success) {
+        const created: Book = { ...(create as Book), id: String(res.id) };
+        const next = [...books, created];
+        setBooks(next);
+        setFilteredBooks(next);
+      } else {
+        alert(res.error || 'Failed to create book');
+        return;
+      }
     }
     setShowAddModal(false);
     setEditingBook(null);
