@@ -33,7 +33,7 @@ const AppRoutes: React.FC = () => {
   };
 
   const location = useLocation();
-  const hideGlobalNav = location.pathname.startsWith('/admin');
+  const hideGlobalNav = location.pathname.startsWith('/admin') || location.pathname.startsWith('/past-papers');
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
