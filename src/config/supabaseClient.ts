@@ -1,12 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string;
+const env = (import.meta as any).env || {};
+
+const supabaseUrl = (env.VITE_SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL) as string | undefined;
+const supabaseAnonKey = (env.VITE_SUPABASE_ANON_KEY || env.NEXT_PUBLIC_SUPABASE_ANON_KEY) as string | undefined;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  // Fail fast in dev; in prod, this would just cause runtime errors which we want surfaced clearly
-  // eslint-disable-next-line no-console
-  console.warn('Supabase env vars are missing: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
+  throw new Error(
+    'Supabase configuration missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or NEXT_PUBLIC_* equivalents).'
+  );
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
