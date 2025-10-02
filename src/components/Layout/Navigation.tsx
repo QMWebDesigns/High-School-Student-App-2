@@ -136,16 +136,19 @@ const Navigation: React.FC = () => {
               </button>
 
               {/* Logout Button */}
-              {currentUser && location.pathname !== '/login' && (
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-                  aria-label="Logout"
-                >
-                  <LogOut className="h-4 w-4 mr-1" />
-                  <span className="hidden sm:inline">Logout</span>
-                </button>
-              )}
+                {/* Only show theme toggle on login page, lock away other nav items */}
+                {location.pathname === '/login' ? null : (
+                  currentUser && (
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                      aria-label="Logout"
+                    >
+                      <LogOut className="h-4 w-4 mr-1" />
+                      <span className="hidden sm:inline">Logout</span>
+                    </button>
+                  )
+                )}
             </div>
           </div>
         </div>
