@@ -28,7 +28,8 @@ export interface PaperMetadata {
 export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Promise<{ success: boolean; downloadUrl?: string; error?: string }> => {
   try {
     // If serverless proxy is available, prefer it (avoids CORS and hides token)
-    const proxyUrl = (import.meta as any).env?.VITE_UPLOAD_PROXY_URL as string | undefined;
+    const proxyUrlRaw = (import.meta as any).env?.VITE_UPLOAD_PROXY_URL as string | undefined;
+    const proxyUrl = proxyUrlRaw ? proxyUrlRaw.replace(/\/+$/, '') : undefined;
     if (proxyUrl) {
       const base64 = await fileToBase64(file);
       const proxyRes = await fetch(`${proxyUrl}/.netlify/functions/upload-github`, {
