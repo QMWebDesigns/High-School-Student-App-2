@@ -106,7 +106,7 @@ export const getPapers = async (useCache: boolean = true) => {
       publisher: row.publisher,
       format: row.format,
       identifier: row.identifier,
-      downloadUrl: row.download_url
+      download_url: row.download_url
     }));
 
     // Update cache
