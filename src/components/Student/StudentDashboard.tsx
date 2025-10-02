@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin, Notebook, FileText, ArrowRight } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
- cursor/enhance-high-school-digital-library-navigation-and-access-b0b9
 import { SAMPLE_PAPERS } from '../../data/sampleContent';
 import { Link } from 'react-router-dom';
 
@@ -40,7 +39,6 @@ const StudentDashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('title');
   const itemsPerPage = 12;
 
- cursor/enhance-high-school-digital-library-navigation-and-access-b0b9
   const normalizedSample = useMemo(() => SAMPLE_PAPERS.map((p) => ({
     id: p.id,
     title: p.title,
@@ -69,7 +67,6 @@ const StudentDashboard: React.FC = () => {
       setFilters(prev => ({ ...prev, subject: subjectParam }));
     }
   }, [location.search]);
- main
 
   const fetchPapers = async () => {
     setLoading(true);
