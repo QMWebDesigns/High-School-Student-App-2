@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navigation from './components/Layout/Navigation';
@@ -32,9 +32,12 @@ const AppRoutes: React.FC = () => {
     return isUserAdmin ? '/admin' : '/home';
   };
 
+  const location = useLocation();
+  const hideGlobalNav = location.pathname.startsWith('/admin');
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      <Navigation />
+      {!hideGlobalNav && <Navigation />}
       <Routes>
         <Route path="/login" element={
           currentUser ? <Navigate to={getDefaultRoute()} replace /> : <Login />
