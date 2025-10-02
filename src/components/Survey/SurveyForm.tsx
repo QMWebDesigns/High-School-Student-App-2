@@ -16,11 +16,11 @@ const SUBJECTS = [
 ];
 
 const STUDY_FREQUENCIES = [
-  'Daily',
-  '2-3 times per week',
-  'Once a week',
-  'Few times a month',
-  'Rarely'
+  { label: 'Daily', value: 'daily' },
+  { label: '2-3 times per week', value: 'weekly' },
+  { label: 'Once a week', value: 'weekly' },
+  { label: 'Few times a month', value: 'monthly' },
+  { label: 'Rarely', value: 'rarely' }
 ];
 
 const PREFERRED_RESOURCES = [
@@ -98,11 +98,16 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
       subjects: formData.subjects,
       studyFrequency: formData.studyFrequency,
       preferredResources: formData.preferredResources,
-      additionalComments: formData.additionalComments
+      additionalComments: formData.additionalComments // keep camelCase for local state
     };
 
+    // When submitting, map to snake_case
     try {
-      const result = await submitSurvey(surveyData);
+      const result = await submitSurvey({
+        ...surveyData,
+        additionalComments: undefined, // remove camelCase
+        additional_comments: formData.additionalComments // add snake_case for DB
+      });
       
       if (result.success) {
         setSubmitted(true);
@@ -226,17 +231,17 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
               </label>
               <div className="space-y-2">
                 {STUDY_FREQUENCIES.map(frequency => (
-                  <label key={frequency} className="flex items-center">
+                  <label key={frequency.value} className="flex items-center">
                     <input
                       type="radio"
                       name="studyFrequency"
-                      value={frequency}
-                      checked={formData.studyFrequency === frequency}
+                      value={frequency.value}
+                      checked={formData.studyFrequency === frequency.value}
                       onChange={(e) => setFormData(prev => ({...prev, studyFrequency: e.target.value}))}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {frequency}
+                      {frequency.label}
                     </span>
                   </label>
                 ))}

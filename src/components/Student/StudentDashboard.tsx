@@ -281,9 +281,9 @@ const StudentDashboard: React.FC = () => {
                   </p>
                 )}
 
-                {paper.downloadUrl && (
+                {paper.download_url && (
                   <a
-                    href={paper.downloadUrl}
+                    href={paper.download_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
