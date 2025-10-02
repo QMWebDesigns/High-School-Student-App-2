@@ -2,8 +2,12 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin, Notebook, FileText, ArrowRight } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
+ cursor/enhance-high-school-digital-library-navigation-and-access-b0b9
 import { SAMPLE_PAPERS } from '../../data/sampleContent';
 import { Link } from 'react-router-dom';
+
+import { useLocation } from 'react-router-dom';
+
 
 const SUBJECTS = [
   'Life Sciences',
@@ -20,6 +24,7 @@ const PROVINCES = ['KZN', 'Gauteng'];
 const GRADES = ['10', '11', '12'];
 
 const StudentDashboard: React.FC = () => {
+  const location = useLocation();
   const [papers, setPapers] = useState<(PaperMetadata & { id: string })[]>([]);
   const [filteredPapers, setFilteredPapers] = useState<(PaperMetadata & { id: string })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +40,7 @@ const StudentDashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('title');
   const itemsPerPage = 12;
 
+ cursor/enhance-high-school-digital-library-navigation-and-access-b0b9
   const normalizedSample = useMemo(() => SAMPLE_PAPERS.map((p) => ({
     id: p.id,
     title: p.title,
@@ -49,6 +55,21 @@ const StudentDashboard: React.FC = () => {
     identifier: p.id,
     downloadUrl: p.download_url
   })), []);
+
+  // Parse URL parameters for initial search/filters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchParam = urlParams.get('search');
+    const subjectParam = urlParams.get('subject');
+    
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+    if (subjectParam) {
+      setFilters(prev => ({ ...prev, subject: subjectParam }));
+    }
+  }, [location.search]);
+ main
 
   const fetchPapers = async () => {
     setLoading(true);

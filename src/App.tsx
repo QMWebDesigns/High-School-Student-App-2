@@ -6,6 +6,9 @@ import Navigation from './components/Layout/Navigation';
 import Login from './components/Auth/Login';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import StudentDashboard from './components/Student/StudentDashboard';
+import Home from './components/Student/Home';
+import Books from './components/Student/Books';
+import StudyGuides from './components/Student/StudyGuides';
 import SurveyForm from './components/Survey/SurveyForm';
 import ProtectedRoute from './components/Common/ProtectedRoute';
 import LoadingScreen from './components/Common/LoadingScreen';
@@ -27,7 +30,7 @@ const AppRoutes: React.FC = () => {
   // Redirect authenticated users to their appropriate dashboard
   const getDefaultRoute = () => {
     if (!currentUser) return '/login';
-    return isUserAdmin ? '/admin' : '/student';
+    return isUserAdmin ? '/admin' : '/home';
   };
 
   return (
@@ -45,7 +48,25 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         } />
         
-        <Route path="/student" element={
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/books" element={
+          <ProtectedRoute>
+            <Books />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/study-guides" element={
+          <ProtectedRoute>
+            <StudyGuides />
+          </ProtectedRoute>
+        } />
+        
+        <Route path="/past-papers" element={
           <ProtectedRoute>
             <StudentDashboard />
           </ProtectedRoute>
@@ -53,6 +74,13 @@ const AppRoutes: React.FC = () => {
         <Route path="/library/papers" element={<PastPapers />} />
         <Route path="/library/books" element={<Books />} />
         <Route path="/library/guides" element={<StudyGuides />} />
+        
+        {/* Legacy route for compatibility */}
+        <Route path="/student" element={
+          <ProtectedRoute>
+            <Navigate to="/home" replace />
+          </ProtectedRoute>
+        } />
         
         <Route path="/survey" element={<SurveyForm />} />
         <Route path="/style-guide" element={<StyleGuide />} />
