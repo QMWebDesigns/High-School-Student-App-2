@@ -5,9 +5,10 @@ import PaperManagement from './PaperManagement';
 import AdminAnalytics from './AdminAnalytics';
 import BookManagement from './BookManagement';
 import StudyGuideManagement from './StudyGuideManagement';
+import UploadBook from './UploadBook';
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage' | 'books' | 'guides'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage' | 'books' | 'guides' | 'uploadBook'>('dashboard');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -26,12 +27,13 @@ const AdminDashboard: React.FC = () => {
             { id: 'dashboard', label: 'Analytics', icon: TrendingUp },
             { id: 'upload', label: 'Upload Paper', icon: Upload },
             { id: 'manage', label: 'Manage Papers', icon: FileText },
+            { id: 'uploadBook', label: 'Upload Book', icon: Book },
             { id: 'books', label: 'Manage Books', icon: Book },
             { id: 'guides', label: 'Study Guides', icon: GraduationCap }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage' | 'books' | 'guides')}
+              onClick={() => setActiveTab(id as any)}
               className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === id
                   ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200'
@@ -48,6 +50,7 @@ const AdminDashboard: React.FC = () => {
       {activeTab === 'dashboard' && <AdminAnalytics />}
       {activeTab === 'upload' && <UploadPaper onUploadSuccess={() => {}} />}
       {activeTab === 'manage' && <PaperManagement onDataChange={() => {}} />}
+      {activeTab === 'uploadBook' && <UploadBook />}
       {activeTab === 'books' && <BookManagement />}
       {activeTab === 'guides' && <StudyGuideManagement />}
     </div>
