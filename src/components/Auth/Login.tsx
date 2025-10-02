@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Eye, EyeOff, Mail, Lock, Loader2 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,6 +9,7 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
   
   const { signIn, signUp } = useAuth();
   
