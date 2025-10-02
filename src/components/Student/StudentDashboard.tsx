@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
+import { useLocation } from 'react-router-dom';
 
 const SUBJECTS = [
   'Life Sciences',
@@ -18,6 +19,7 @@ const PROVINCES = ['KZN', 'Gauteng'];
 const GRADES = ['10', '11', '12'];
 
 const StudentDashboard: React.FC = () => {
+  const location = useLocation();
   const [papers, setPapers] = useState<(PaperMetadata & { id: string })[]>([]);
   const [filteredPapers, setFilteredPapers] = useState<(PaperMetadata & { id: string })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,20 @@ const StudentDashboard: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('title');
   const itemsPerPage = 12;
+
+  // Parse URL parameters for initial search/filters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchParam = urlParams.get('search');
+    const subjectParam = urlParams.get('subject');
+    
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+    if (subjectParam) {
+      setFilters(prev => ({ ...prev, subject: subjectParam }));
+    }
+  }, [location.search]);
 
   const fetchPapers = async () => {
     setLoading(true);
