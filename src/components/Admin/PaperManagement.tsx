@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard as Edit, Trash2, Download, Search } from 'lucide-react';
-import { getPapers, deletePaper, updatePaper } from '../../services/firestoreService';
+import { getPapers, deletePaper, updatePaper } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
 
 interface PaperManagementProps {
@@ -85,7 +85,7 @@ const PaperManagement: React.FC<PaperManagementProps> = ({ onDataChange }) => {
             placeholder="Search papers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
           />
         </div>
       </div>
@@ -132,7 +132,7 @@ const PaperManagement: React.FC<PaperManagementProps> = ({ onDataChange }) => {
                 )}
                 <button
                   onClick={() => handleEdit(paper)}
-                  className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900 rounded"
+                  className="p-2 text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:hover:bg-primary-900 rounded"
                 >
                   <Edit className="h-4 w-4" />
                 </button>
@@ -195,7 +195,7 @@ const EditPaperModal: React.FC<EditPaperModalProps> = ({ paper, onUpdate, onClos
               type="text"
               value={editedPaper.title}
               onChange={(e) => setEditedPaper({...editedPaper, title: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
           
@@ -208,7 +208,7 @@ const EditPaperModal: React.FC<EditPaperModalProps> = ({ paper, onUpdate, onClos
                 type="text"
                 value={editedPaper.grade}
                 onChange={(e) => setEditedPaper({...editedPaper, grade: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
             
@@ -220,7 +220,7 @@ const EditPaperModal: React.FC<EditPaperModalProps> = ({ paper, onUpdate, onClos
                 type="text"
                 value={editedPaper.subject}
                 onChange={(e) => setEditedPaper({...editedPaper, subject: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>
@@ -233,7 +233,7 @@ const EditPaperModal: React.FC<EditPaperModalProps> = ({ paper, onUpdate, onClos
               value={editedPaper.description}
               onChange={(e) => setEditedPaper({...editedPaper, description: e.target.value})}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -247,7 +247,7 @@ const EditPaperModal: React.FC<EditPaperModalProps> = ({ paper, onUpdate, onClos
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
             >
               Update Paper
             </button>

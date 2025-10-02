@@ -1,6 +1,10 @@
-const GITHUB_REPO = "QMWebDesigns/High-School-Student-App-2"; // Update with your GitHub username/repo
-const GITHUB_BRANCH = "main";
-const GITHUB_TOKEN = "Digital Library Upload"; // Replace with your actual token
+const ENV_REPO = (import.meta as any).env?.VITE_GITHUB_REPO as string | undefined;
+const ENV_BRANCH = (import.meta as any).env?.VITE_GITHUB_BRANCH as string | undefined;
+const ENV_TOKEN = (import.meta as any).env?.VITE_GITHUB_TOKEN as string | undefined;
+
+const GITHUB_REPO = ENV_REPO || "QMWebDesigns/High-School-Student-App-2";
+const GITHUB_BRANCH = ENV_BRANCH || "main";
+const GITHUB_TOKEN = ENV_TOKEN || "";
 
 // Note: For production, you should:
 // 1. Create a GitHub Personal Access Token with repo permissions
@@ -23,12 +27,28 @@ export interface PaperMetadata {
 
 export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Promise<{ success: boolean; downloadUrl?: string; error?: string }> => {
   try {
-    // Check if GitHub token is configured
-    if (GITHUB_TOKEN === "Digital Library Upload") {
-      return { 
-        success: false, 
-        error: "GitHub token not configured. Please set up a GitHub Personal Access Token in the githubService.ts file." 
-      };
+    // If serverless proxy is available, prefer it (avoids CORS and hides token)
+    const proxyUrlRaw = (import.meta as any).env?.VITE_UPLOAD_PROXY_URL as string | undefined;
+    const proxyUrl = proxyUrlRaw ? proxyUrlRaw.replace(/\/+$/, '') : undefined;
+    if (proxyUrl) {
+      const base64 = await fileToBase64(file);
+      // Change from Netlify function to Vercel API route
+      const proxyRes = await fetch('/api/upload-github', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ metadata, base64Content: base64, fileName: file.name })
+      });
+      if (!proxyRes.ok) {
+        const data = await proxyRes.json().catch(() => ({}));
+        return { success: false, error: data?.error || `Proxy error ${proxyRes.status}` };
+      }
+      const data = await proxyRes.json();
+      return { success: true, downloadUrl: data.downloadUrl };
+    }
+
+    // Direct-to-GitHub fallback (requires client-side token and CORS)
+    if (!GITHUB_TOKEN) {
+      return { success: false, error: "GitHub token not configured. Set VITE_GITHUB_TOKEN or use serverless proxy." };
     }
 
     // Validate file size (max 25MB for GitHub)
@@ -39,9 +59,17 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
       };
     }
 
-    // Create organized folder structure
+    // Create organized folder structure (URL-encode each path segment)
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const path = `papers/grade-${metadata.grade}/${metadata.subject}/${metadata.year}/${metadata.examType}/${sanitizedFileName}`;
+    const pathSegments = [
+      'papers',
+      `grade-${encodeURIComponent(metadata.grade)}`,
+      encodeURIComponent(metadata.subject),
+      encodeURIComponent(metadata.year),
+      encodeURIComponent(metadata.examType),
+      sanitizedFileName
+    ];
+    const path = pathSegments.join('/');
     const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`;
     
     const base64Content = await fileToBase64(file);
@@ -54,9 +82,9 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
     const response = await fetch(url, {
       method: "PUT",
       headers: {
-        "Authorization": `token ${GITHUB_TOKEN}`,
-        "Content-Type": "application/json",
-        "User-Agent": "Digital-Library-App"
+        "Authorization": `Bearer ${GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(body)
     });
@@ -80,7 +108,8 @@ export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Pr
       return { success: false, error: errorMessage };
     }
   } catch (error: unknown) {
-    return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
+    const message = error instanceof TypeError ? 'Network error (CORS or invalid URL). Please check repo, token, and path.' : (error instanceof Error ? error.message : 'An error occurred');
+    return { success: false, error: message };
   }
 };
 

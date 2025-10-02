@@ -59,7 +59,8 @@
 
 #### Firebase Configuration
 ```bash
-# Update src/config/firebase.ts with your Firebase config
+# Supabase Configuration
+# Ensure `.env.local` has VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY set
 # Ensure these services are enabled:
 # - Authentication (Email/Password)
 # - Firestore Database

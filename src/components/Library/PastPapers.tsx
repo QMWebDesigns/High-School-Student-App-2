@@ -1,12 +1,8 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, Download, BookOpen, Calendar, MapPin, Notebook, FileText, ArrowRight } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
-import { PaperMetadata } from '../../services/githubService';
+import type { PaperMetadata } from '../../services/githubService';
 import { SAMPLE_PAPERS } from '../../data/sampleContent';
-import { Link } from 'react-router-dom';
-
-import { useLocation } from 'react-router-dom';
-
 
 const SUBJECTS = [
   'Life Sciences',
@@ -22,10 +18,11 @@ const SUBJECTS = [
 const PROVINCES = ['KZN', 'Gauteng'];
 const GRADES = ['10', '11', '12'];
 
-const StudentDashboard: React.FC = () => {
-  const location = useLocation();
-  const [papers, setPapers] = useState<(PaperMetadata & { id: string })[]>([]);
-  const [filteredPapers, setFilteredPapers] = useState<(PaperMetadata & { id: string })[]>([]);
+type Paper = (PaperMetadata & { id: string } & { download_url?: string; downloadUrl?: string });
+
+const PastPapers: React.FC = () => {
+  const [papers, setPapers] = useState<Paper[]>([]);
+  const [filteredPapers, setFilteredPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
@@ -39,79 +36,65 @@ const StudentDashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('title');
   const itemsPerPage = 12;
 
-  const normalizedSample = useMemo(() => SAMPLE_PAPERS.map((p) => ({
-    id: p.id,
-    title: p.title,
-    grade: p.grade,
-    subject: p.subject,
-    province: p.province,
-    examType: p.examType,
-    year: p.year,
-    description: p.description,
-    publisher: p.publisher || 'Department of Education',
-    format: 'pdf',
-    identifier: p.id,
-    downloadUrl: p.download_url
-  })), []);
-
-  // Parse URL parameters for initial search/filters
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search);
-    const searchParam = urlParams.get('search');
-    const subjectParam = urlParams.get('subject');
-    
-    if (searchParam) {
-      setSearchTerm(searchParam);
-    }
-    if (subjectParam) {
-      setFilters(prev => ({ ...prev, subject: subjectParam }));
-    }
-  }, [location.search]);
+  const normalizedSample: Paper[] = useMemo(() => {
+    return SAMPLE_PAPERS.map(p => ({
+      ...p,
+      format: 'pdf',
+      identifier: p.id,
+      publisher: p.publisher || 'Department of Education'
+    }));
+  }, []);
 
   const fetchPapers = async () => {
     setLoading(true);
     try {
       const result = await getPapers();
       if (result.success) {
-        const got = (result.papers as (PaperMetadata & { id: string })[]) || [];
-        setPapers(got.length === 0 ? (normalizedSample as (PaperMetadata & { id: string })[]) : (result.papers as (PaperMetadata & { id: string })[]));
+        const got = (result.papers as Paper[]) || [];
+        if (got.length === 0) {
+          setPapers(normalizedSample);
+        } else {
+          setPapers(got);
+        }
       } else {
-        setPapers(normalizedSample as (PaperMetadata & { id: string })[]);
+        setPapers(normalizedSample);
       }
-    } catch (error) {
-      console.error('Error fetching papers:', error);
-      setPapers(normalizedSample as (PaperMetadata & { id: string })[]);
+    } catch {
+      // fall back to sample
+      setPapers(normalizedSample);
     } finally {
       setLoading(false);
     }
   };
 
   const applyFilters = useCallback(() => {
-    const filtered = papers.filter(paper => {
+    const filtered = papers.filter((paper: Paper) => {
+      const title = (paper.title || '').toLowerCase();
+      const subject = (paper.subject || '').toLowerCase();
+      const description = (paper.description || '').toLowerCase();
       const matchesSearch = 
-        paper.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        paper.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        paper.description.toLowerCase().includes(searchTerm.toLowerCase());
+        title.includes(searchTerm.toLowerCase()) ||
+        subject.includes(searchTerm.toLowerCase()) ||
+        description.includes(searchTerm.toLowerCase());
 
       const matchesFilters = 
         (filters.grade === '' || paper.grade === filters.grade) &&
         (filters.subject === '' || paper.subject === filters.subject) &&
         (filters.province === '' || paper.province === filters.province) &&
         (filters.examType === '' || paper.examType === filters.examType) &&
-        (filters.year === '' || paper.year === filters.year);
+        (filters.year === '' || String(paper.year) === filters.year);
 
       return matchesSearch && matchesFilters;
     });
 
-    // Sort papers
-    filtered.sort((a, b) => {
+    filtered.sort((a: Paper, b: Paper) => {
       switch (sortBy) {
         case 'title':
-          return a.title.localeCompare(b.title);
+          return (a.title || '').localeCompare(b.title || '');
         case 'year':
-          return parseInt(b.year) - parseInt(a.year);
+          return parseInt(String(b.year || '0')) - parseInt(String(a.year || '0'));
         case 'subject':
-          return a.subject.localeCompare(b.subject);
+          return (a.subject || '').localeCompare(b.subject || '');
         default:
           return 0;
       }
@@ -123,6 +106,7 @@ const StudentDashboard: React.FC = () => {
 
   useEffect(() => {
     fetchPapers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -130,7 +114,7 @@ const StudentDashboard: React.FC = () => {
   }, [applyFilters]);
 
   const handleFilterChange = (key: keyof typeof filters, value: string) => {
-    setFilters(prev => ({
+    setFilters((prev: typeof filters) => ({
       ...prev,
       [key]: value
     }));
@@ -147,7 +131,6 @@ const StudentDashboard: React.FC = () => {
     setSearchTerm('');
   };
 
-  // Pagination
   const totalPages = Math.ceil(filteredPapers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -163,13 +146,9 @@ const StudentDashboard: React.FC = () => {
               Browse and download past papers for Grades 10-12
             </p>
           </div>
-          
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-600 dark:text-gray-400">Loading papers...</p>
-            <div className="mt-4 w-64 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mx-auto">
-              <div className="bg-primary-600 h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-            </div>
           </div>
         </div>
       </div>
@@ -179,56 +158,13 @@ const StudentDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Student Portal</h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Quick access to resources for Grades 10–12</p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Past Exam Papers</h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Browse and download past papers for Grades 10-12
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <Link to="/library/papers" className="group bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Past Papers</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Filter by grade and subject</p>
-              </div>
-              <FileText className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <div className="mt-3 inline-flex items-center text-primary-600 dark:text-primary-400 text-sm">
-              Browse papers <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </Link>
-          <Link to="/library/guides" className="group bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Study Guides</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Topic-focused help</p>
-              </div>
-              <Notebook className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <div className="mt-3 inline-flex items-center text-primary-600 dark:text-primary-400 text-sm">
-              Explore guides <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </Link>
-          <Link to="/library/books" className="group bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Books</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Workbooks and readers</p>
-              </div>
-              <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-            </div>
-            <div className="mt-3 inline-flex items-center text-primary-600 dark:text-primary-400 text-sm">
-              View books <ArrowRight className="h-4 w-4 ml-1 group-hover:translate-x-0.5 transition-transform" />
-            </div>
-          </Link>
-        </div>
-
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Past Exam Papers</h2>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Browse and download past papers for Grades 10–12</p>
-        </div>
-
-        {/* Search and Filters */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
             <div className="lg:col-span-2">
@@ -243,7 +179,7 @@ const StudentDashboard: React.FC = () => {
                 />
               </div>
             </div>
-            
+
             <div>
               <select
                 value={sortBy}
@@ -255,7 +191,7 @@ const StudentDashboard: React.FC = () => {
                 <option value="subject">Sort by Subject</option>
               </select>
             </div>
-            
+
             <div className="flex justify-end">
               <button
                 onClick={clearFilters}
@@ -318,16 +254,14 @@ const StudentDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Results */}
         <div className="mb-6 flex justify-between items-center">
           <p className="text-gray-600 dark:text-gray-400">
             Showing {startIndex + 1}-{Math.min(endIndex, filteredPapers.length)} of {filteredPapers.length} papers
           </p>
         </div>
 
-        {/* Papers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {currentPapers.map(paper => (
+          {currentPapers.map((paper: Paper) => (
             <div key={paper.id} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
@@ -336,11 +270,9 @@ const StudentDashboard: React.FC = () => {
                     Grade {paper.grade}
                   </span>
                 </div>
-                
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
                   {paper.title}
                 </h3>
-                
                 <div className="space-y-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center">
                     <BookOpen className="h-4 w-4 mr-2" />
@@ -355,16 +287,9 @@ const StudentDashboard: React.FC = () => {
                     {paper.year} • {paper.examType}
                   </div>
                 </div>
-
-                {paper.description && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                    {paper.description}
-                  </p>
-                )}
-
-                {paper.downloadUrl && (
+                {(paper.downloadUrl || paper.download_url) && (
                   <a
-                    href={paper.downloadUrl}
+                    href={(paper.downloadUrl || paper.download_url) as string}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
@@ -378,7 +303,6 @@ const StudentDashboard: React.FC = () => {
           ))}
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center space-x-2">
             <button
@@ -388,7 +312,6 @@ const StudentDashboard: React.FC = () => {
             >
               Previous
             </button>
-            
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
               <button
                 key={page}
@@ -402,7 +325,6 @@ const StudentDashboard: React.FC = () => {
                 {page}
               </button>
             ))}
-            
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
@@ -429,4 +351,5 @@ const StudentDashboard: React.FC = () => {
   );
 };
 
-export default StudentDashboard;
+export default PastPapers;
+

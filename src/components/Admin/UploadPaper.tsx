@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
-import { uploadPDFToGitHub, PaperMetadata } from '../../services/githubService';
-import { savePaperMetadata } from '../../services/firestoreService';
+import { papers, UploadMetadata } from '../../lib/supabase';
 
 const SUBJECTS = [
   'Life Sciences',
@@ -14,7 +13,7 @@ const SUBJECTS = [
   'Mathematical Literacy'
 ];
 
-const PROVINCES = ['KwaZulu-Natal', 'Gauteng'];
+const PROVINCES = ['KZN', 'Gauteng']; // Fixed to match your database enum
 const GRADES = ['10', '11', '12'];
 const EXAM_TYPES = ['Mid-Year', 'Final', 'Trial', 'Supplementary'];
 
@@ -22,9 +21,22 @@ interface UploadPaperProps {
   onUploadSuccess: () => void;
 }
 
+// Local interface that matches your form state
+interface PaperFormData {
+  title: string;
+  grade: string;
+  subject: string;
+  province: string;
+  examType: string;
+  year: string;
+  description: string;
+  publisher: string;
+  identifier: string;
+}
+
 const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [metadata, setMetadata] = useState<PaperMetadata>({
+  const [metadata, setMetadata] = useState<PaperFormData>({
     title: '',
     grade: '',
     subject: '',
@@ -33,11 +45,11 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
     year: '2023',
     description: '',
     publisher: '',
-    format: 'PDF',
     identifier: ''
   });
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +73,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
     }
   };
 
-  const handleMetadataChange = (field: keyof PaperMetadata, value: string) => {
+  const handleMetadataChange = (field: keyof PaperFormData, value: string) => {
     setMetadata(prev => ({
       ...prev,
       [field]: value
@@ -91,12 +103,12 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
       setError('Please select a subject');
       return;
     }
-    
+
     if (!metadata.province) {
       setError('Please select a province');
       return;
     }
-    
+
     if (!metadata.examType) {
       setError('Please select an exam type');
       return;
@@ -106,46 +118,49 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
     setError('');
 
     try {
-      // Upload to GitHub
-      const uploadResult = await uploadPDFToGitHub(file, metadata);
+      // Convert form data to UploadMetadata type
+      const uploadData: UploadMetadata = {
+        title: metadata.title,
+        grade: Number(metadata.grade),
+        subject: metadata.subject,
+        province: metadata.province as 'KZN' | 'Gauteng',
+        examType: metadata.examType,
+        year: Number(metadata.year),
+        description: metadata.description || undefined,
+        publisher: metadata.publisher || undefined
+      };
+
+      // Upload to Supabase
+      const uploadResult = await papers.uploadPaper(file, uploadData);
       
-      if (uploadResult.success && uploadResult.downloadUrl) {
-        // Save metadata to Firestore
-        const metadataWithUrl = {
-          ...metadata,
-          downloadUrl: uploadResult.downloadUrl
-        };
+      if (uploadResult.success && uploadResult.paper) {
+        setSuccess(true);
+        setDownloadUrl(uploadResult.paper.download_url || null);
         
-        const saveResult = await savePaperMetadata(metadataWithUrl);
+        // Reset form
+        setFile(null);
+        setMetadata({
+          title: '',
+          grade: '',
+          subject: '',
+          province: '',
+          examType: '',
+          year: '2023',
+          description: '',
+          publisher: '',
+          identifier: ''
+        });
         
-        if (saveResult.success) {
-          setSuccess(true);
-          setFile(null);
-          setMetadata({
-            title: '',
-            grade: '',
-            subject: '',
-            province: '',
-            examType: '',
-            year: '2023',
-            description: '',
-            publisher: '',
-            format: 'PDF',
-            identifier: ''
-          });
-          onUploadSuccess();
-          
-          // Reset form
-          const form = document.getElementById('upload-form') as HTMLFormElement;
-          if (form) form.reset();
-        } else {
-          setError(saveResult.error || 'Failed to save metadata');
-        }
+        // Clear file input
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        if (fileInput) fileInput.value = '';
+        
+        onUploadSuccess();
       } else {
         setError(uploadResult.error || 'Failed to upload file');
       }
-    } catch {
-      setError('An unexpected error occurred');
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred');
     } finally {
       setUploading(false);
     }
@@ -160,13 +175,27 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
 
         {success && (
           <div className="mb-6 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-md p-4">
-            <div className="flex">
-              <CheckCircle className="h-5 w-5 text-green-400" />
-              <div className="ml-3">
-                <p className="text-green-700 dark:text-green-200">
-                  Paper uploaded successfully!
-                </p>
+            <div className="flex flex-col">
+              <div className="flex items-center">
+                <CheckCircle className="h-5 w-5 text-green-400" />
+                <div className="ml-3">
+                  <p className="text-green-700 dark:text-green-200">
+                    Paper uploaded successfully!
+                  </p>
+                </div>
               </div>
+              {downloadUrl && (
+                <div className="mt-2">
+                  <a
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 dark:text-blue-300 underline break-all"
+                  >
+                    Download PDF
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -220,7 +249,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.title}
                 onChange={(e) => handleMetadataChange('title', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
 
@@ -232,11 +261,11 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.grade}
                 onChange={(e) => handleMetadataChange('grade', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Grade</option>
                 {GRADES.map(grade => (
-                  <option key={grade} value={grade}>{grade}</option>
+                  <option key={grade} value={grade}>Grade {grade}</option>
                 ))}
               </select>
             </div>
@@ -249,7 +278,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.subject}
                 onChange={(e) => handleMetadataChange('subject', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Subject</option>
                 {SUBJECTS.map(subject => (
@@ -266,7 +295,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.province}
                 onChange={(e) => handleMetadataChange('province', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Province</option>
                 {PROVINCES.map(province => (
@@ -283,7 +312,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.examType}
                 onChange={(e) => handleMetadataChange('examType', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="">Select Exam Type</option>
                 {EXAM_TYPES.map(type => (
@@ -303,7 +332,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 required
                 value={metadata.year}
                 onChange={(e) => handleMetadataChange('year', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
           </div>
@@ -316,7 +345,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
               rows={3}
               value={metadata.description}
               onChange={(e) => handleMetadataChange('description', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
               placeholder="Brief description of the paper..."
             />
           </div>
@@ -330,7 +359,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 type="text"
                 value={metadata.publisher}
                 onChange={(e) => handleMetadataChange('publisher', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Department of Education"
               />
             </div>
@@ -343,7 +372,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
                 type="text"
                 value={metadata.identifier}
                 onChange={(e) => handleMetadataChange('identifier', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Unique identifier"
               />
             </div>
@@ -353,7 +382,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
             <button
               type="submit"
               disabled={uploading || !file}
-              className="px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-3 bg-primary-600 text-white font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {uploading ? 'Uploading...' : 'Upload Paper'}
             </button>
