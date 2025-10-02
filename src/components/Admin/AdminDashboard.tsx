@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Upload, FileText, TrendingUp } from 'lucide-react';
 import UploadPaper from './UploadPaper';
@@ -22,7 +21,7 @@ const AdminDashboard: React.FC = () => {
       <div className="mb-8">
         <nav className="flex space-x-8">
           {[
-            { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
+            { id: 'dashboard', label: 'Analytics', icon: TrendingUp },
             { id: 'upload', label: 'Upload Paper', icon: Upload },
             { id: 'manage', label: 'Manage Papers', icon: FileText }
           ].map(({ id, label, icon: Icon }) => (
@@ -43,8 +42,8 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {activeTab === 'dashboard' && <AdminAnalytics />}
-  {activeTab === 'upload' && <UploadPaper onUploadSuccess={() => {}} />}
-  {activeTab === 'manage' && <PaperManagement onDataChange={() => {}} />}
+      {activeTab === 'upload' && <UploadPaper onUploadSuccess={() => {}} />}
+      {activeTab === 'manage' && <PaperManagement onDataChange={() => {}} />}
     </div>
   );
 };
