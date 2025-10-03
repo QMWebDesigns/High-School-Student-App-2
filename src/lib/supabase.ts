@@ -16,14 +16,14 @@ export interface Paper {
   grade: number;
   subject: string;
   province: 'KZN' | 'Gauteng';
-  exam_type: string;  // Note: snake_case to match database
+  exam_type: string;
   year: number;
   description?: string;
   publisher?: string;
   format: string;
   identifier?: string;
-  file_path: string;      // Must match database
-  download_url: string;   // Must match database  
+  file_path: string;
+  download_url: string;
   file_size?: number;
   download_count: number;
   created_at: string;
@@ -54,7 +54,7 @@ export interface UploadMetadata {
   grade: number;
   subject: string;
   province: 'KZN' | 'Gauteng';
-  examType: string;  // Your frontend can use camelCase
+  examType: string;
   year: number;
   description?: string;
   publisher?: string;
@@ -145,7 +145,7 @@ export const papers = {
       const filePath = `grade-${metadata.grade}/${metadata.subject}/${metadata.year}/${metadata.examType}/${fileName}`;
 
       // Upload file to Supabase Storage
-      const { error: storageError } = await supabase.storage
+      const { data: storageData, error: storageError } = await supabase.storage
         .from('papers')
         .upload(filePath, file, {
           contentType: file.type,
@@ -307,8 +307,6 @@ export const papers = {
   }
 };
 
-
-
 // Survey functions
 export const surveys = {
   // Submit survey
@@ -424,11 +422,11 @@ export const utils = {
     if (!data) return {};
 
     return {
-      grades: [...new Set(data.map((p: any) => p.grade))].sort(),
-      subjects: [...new Set(data.map((p: any) => p.subject))].sort(),
-      provinces: [...new Set(data.map((p: any) => p.province))],
-      examTypes: [...new Set(data.map((p: any) => p.exam_type))].sort(),
-      years: [...new Set(data.map((p: any) => p.year))].sort((a: number, b: number) => b - a)
+      grades: [...new Set(data.map(p => p.grade))].sort(),
+      subjects: [...new Set(data.map(p => p.subject))].sort(),
+      provinces: [...new Set(data.map(p => p.province))],
+      examTypes: [...new Set(data.map(p => p.exam_type))].sort(),
+      years: [...new Set(data.map(p => p.year))].sort((a, b) => b - a)
     };
   },
 
@@ -443,174 +441,3 @@ export const utils = {
 };
 
 export default supabase;
-
-// Storage and content helpers for Books and Study Guides
-export const storage = {
-  async uploadBook(file: File, metadata: {
-    title: string;
-    grade: number;
-    subject: string;
-    author: string;
-    publisher?: string;
-    year?: number;
-  }): Promise<{ success: boolean; error?: string; publicUrl?: string }> {
-    try {
-      const fileExtension = file.name.split('.').pop();
-      const safeTitle = metadata.title.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `${safeTitle}.${fileExtension}`;
-      const filePath = `grade-${metadata.grade}/${metadata.subject}/${fileName}`;
-
-      const { error } = await supabase.storage
-        .from('books')
-        .upload(filePath, file, {
-          contentType: file.type,
-          upsert: false
-        });
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('books')
-        .getPublicUrl(filePath);
-
-      return { success: true, publicUrl };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  },
-
-  async uploadStudyGuide(file: File, metadata: {
-    title: string;
-    grade: number;
-    subject: string;
-    topic?: string;
-    author: string;
-    difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
-    estimatedTime?: string;
-  }): Promise<{ success: boolean; error?: string; publicUrl?: string }> {
-    try {
-      const fileExtension = file.name.split('.').pop();
-      const safeTitle = metadata.title.replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `${safeTitle}.${fileExtension}`;
-      const filePath = `grade-${metadata.grade}/${metadata.subject}/${fileName}`;
-
-      const { error } = await supabase.storage
-        .from('study-guides')
-        .upload(filePath, file, {
-          contentType: file.type,
-          upsert: false
-        });
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('study-guides')
-        .getPublicUrl(filePath);
-
-      return { success: true, publicUrl };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  }
-};
-
-export const books = {
-  async addBook(bookData: {
-    title: string;
-    author: string;
-    subject: string;
-    grade: number;
-    description?: string;
-    download_url: string;
-    publisher?: string;
-    year?: number;
-    pages?: number;
-    isbn?: string;
-  }): Promise<{ success: boolean; error?: string; book?: any }> {
-    try {
-      const { data, error } = await supabase
-        .from('books')
-        .insert({
-          ...bookData,
-          grade: bookData.grade.toString(),
-          year: bookData.year?.toString()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { success: true, book: data };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  },
-
-  async getBooks(filters?: { grade?: string; subject?: string }): Promise<{ data: any[] | null; error: string | null }> {
-    try {
-      let query = supabase
-        .from('books')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filters?.grade) query = query.eq('grade', filters.grade);
-      if (filters?.subject) query = query.eq('subject', filters.subject);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return { data, error: null };
-    } catch (error: any) {
-      return { data: null, error: error.message };
-    }
-  }
-};
-
-export const studyGuides = {
-  async addStudyGuide(guideData: {
-    title: string;
-    subject: string;
-    grade: number;
-    topic?: string;
-    description?: string;
-    author: string;
-    difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
-    estimated_time?: string;
-    download_url: string;
-    pages?: number;
-    tags?: string[];
-  }): Promise<{ success: boolean; error?: string; guide?: any }> {
-    try {
-      const { data, error } = await supabase
-        .from('study_guides')
-        .insert({
-          ...guideData,
-          grade: guideData.grade.toString()
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { success: true, guide: data };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  },
-
-  async getStudyGuides(filters?: { grade?: string; subject?: string; difficulty?: string }): Promise<{ data: any[] | null; error: string | null }> {
-    try {
-      let query = supabase
-        .from('study_guides')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filters?.grade) query = query.eq('grade', filters.grade);
-      if (filters?.subject) query = query.eq('subject', filters.subject);
-      if (filters?.difficulty) query = query.eq('difficulty', filters.difficulty);
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return { data, error: null };
-    } catch (error: any) {
-      return { data: null, error: error.message };
-    }
-  }
-};

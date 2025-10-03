@@ -1,25 +1,23 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';
-import { SAMPLE_PAPERS } from '../../data/sampleContent';
-import { useLocation } from 'react-router-dom';
-
 
 const SUBJECTS = [
   'Life Sciences',
   'Physical Sciences', 
   'Geography',
   'Mathematics',
+  'Business Studies',
   'Accounting',
+  'History',
   'Mathematical Literacy'
 ];
 
-const PROVINCES = ['KZN', 'Gauteng'];
+const PROVINCES = ['KwaZulu-Natal', 'Gauteng'];
 const GRADES = ['10', '11', '12'];
 
 const StudentDashboard: React.FC = () => {
-  const location = useLocation();
   const [papers, setPapers] = useState<(PaperMetadata & { id: string })[]>([]);
   const [filteredPapers, setFilteredPapers] = useState<(PaperMetadata & { id: string })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,19 +62,16 @@ const StudentDashboard: React.FC = () => {
     }
   }, [location.search]);
 
+
   const fetchPapers = async () => {
     setLoading(true);
     try {
       const result = await getPapers();
       if (result.success) {
-        const got = (result.papers as (PaperMetadata & { id: string })[]) || [];
-        setPapers(got.length === 0 ? (normalizedSample as (PaperMetadata & { id: string })[]) : (result.papers as (PaperMetadata & { id: string })[]));
-      } else {
-        setPapers(normalizedSample as (PaperMetadata & { id: string })[]);
+        setPapers(result.papers);
       }
     } catch (error) {
       console.error('Error fetching papers:', error);
-      setPapers(normalizedSample as (PaperMetadata & { id: string })[]);
     } finally {
       setLoading(false);
     }

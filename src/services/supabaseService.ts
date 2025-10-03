@@ -15,47 +15,15 @@ export interface SurveyData {
   timestamp?: unknown;
 }
 
-export const submitSurvey = async (surveyData: SurveyData) => {
+export const submitSurvey = async (data: SurveyData) => {
   try {
-    const user = await supabase.auth.getUser();
-    
-    if (!user.data.user) {
-      return { success: false, error: 'User not authenticated' };
-    }
-
-    // Map frontend values to database enum values
-    const studyFrequencyMap: { [key: string]: string } = {
-      'Daily': 'daily',
-      '2-3 times per week': 'weekly', 
-      'Once a week': 'weekly',
-      'Few times a month': 'monthly',
-      'Rarely': 'rarely'
-    };
-
-    const dbStudyFrequency = studyFrequencyMap[surveyData.studyFrequency] || 
-                            surveyData.studyFrequency.toLowerCase();
-
-    const { error } = await supabase
-      .from('surveys')
-      .insert({
-        user_id: user.data.user.id,
-        student_email: surveyData.studentEmail,
-        most_needed_subjects: surveyData.subjects,        // matches your schema
-        study_frequency: dbStudyFrequency,                // matches your schema  
-        preferred_resources: surveyData.preferredResources, // matches your schema
-        additional_comments: surveyData.additionalComments // matches your schema
-        // timestamp is automatically set by DEFAULT NOW()
-      });
-
-    if (error) {
-      console.error('Survey submission error:', error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true };
-  } catch (error: any) {
-    console.error('Survey submit error:', error);
-    return { success: false, error: error.message };
+    const { error } = await supabase.from('surveys').insert({
+      ...data,
+      timestamp: new Date().toISOString()
+    });
+    return { success: !error, error: error ? error.message : null };
+  } catch (error: unknown) {
+    return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
   }
 };
 
@@ -97,16 +65,16 @@ export const getPapers = async (useCache: boolean = true) => {
     const papers: (PaperMetadata & { id: string })[] = (data || []).map((row: any) => ({
       id: String(row.id),
       title: row.title,
-      grade: String(row.grade ?? ''),
+      grade: row.grade,
       subject: row.subject,
       province: row.province,
-      examType: row.exam_type ?? row.examType,
-      year: String(row.year ?? ''),
-      description: row.description ?? '',
-      publisher: row.publisher ?? '',
-      format: row.format ?? 'pdf',
-      identifier: row.identifier ?? '',
-      downloadUrl: row.download_url ?? row.downloadUrl
+      examType: row.examType,
+      year: row.year,
+      description: row.description,
+      publisher: row.publisher,
+      format: row.format,
+      identifier: row.identifier,
+      downloadUrl: row.downloadUrl
     }));
 
     // Update cache
@@ -128,11 +96,11 @@ export const getSurveys = async () => {
     if (error) throw error;
     const surveys: (SurveyData & { id: string })[] = (data || []).map((row: any) => ({
       id: String(row.id),
-      studentEmail: row.student_email ?? row.studentEmail,
-      subjects: row.most_needed_subjects ?? row.subjects,
-      studyFrequency: row.study_frequency ?? row.studyFrequency,
-      preferredResources: row.preferred_resources ?? row.preferredResources,
-      additionalComments: row.additional_comments ?? row.additionalComments,
+      studentEmail: row.studentEmail,
+      subjects: row.subjects,
+      studyFrequency: row.studyFrequency,
+      preferredResources: row.preferredResources,
+      additionalComments: row.additionalComments,
       timestamp: row.timestamp
     }));
     return { success: true, surveys, error: null };

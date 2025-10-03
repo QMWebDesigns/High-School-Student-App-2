@@ -5,81 +5,32 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const SUBJECTS = [
-  'Mathematics',
-  'Physical Sciences',
   'Life Sciences',
-  'English',
+  'Physical Sciences',
   'Geography',
-  'History',
-  'Accounting',
+  'Mathematics',
   'Business Studies',
-  'Mathematical Literacy',
-  'Other'
+  'Accounting',
+  'History',
+  'Mathematical Literacy'
 ];
 
 const STUDY_FREQUENCIES = [
-  { label: 'Daily', value: 'daily' },
-  { label: '2-3 times per week', value: 'weekly' },
-  { label: 'Once a week', value: 'weekly' },
-  { label: 'Few times a month', value: 'monthly' },
-  { label: 'Rarely', value: 'rarely' }
+  'Daily',
+  '2-3 times per week',
+  'Once a week',
+  'Few times a month',
+  'Rarely'
 ];
 
-// Align with AdminAnalytics label mapping
 const PREFERRED_RESOURCES = [
-  'Previous exam question papers',
-  'Study guides',
-  'Online tutorials',
-  'Educational videos'
-];
-
-// Additional non-breaking questions (stored via comments for now)
-const GRADES = ['10', '11', '12'];
-const PROVINCES = [
-  'KwaZulu-Natal',
-  'Gauteng',
-  'Western Cape',
-  'Eastern Cape',
-  'Limpopo',
-  'Mpumalanga',
-  'Free State',
-  'North West',
-  'Northern Cape'
-];
-const DEVICES = [
-  'Smartphone',
-  'Shared smartphone',
-  'Tablet',
-  'Laptop/PC',
-  'None'
-];
-const CONNECTIVITY = [
-  'Uncapped Wi‑Fi',
-  'Capped Wi‑Fi',
-  'Mobile data only',
-  'School-only access'
-];
-const LANGUAGES = [
-  'English',
-  'isiZulu',
-  'isiXhosa',
-  'Sesotho',
-  'Afrikaans',
-  'Other'
-];
-const ACCESSIBILITY = [
-  'Larger text',
-  'Captioned videos',
-  'Screen reader support',
-  'Low-data mode',
-  'None'
-];
-const DESIRED_FEATURES = [
-  'E-books',
-  'Articles',
-  'Videos',
-  'Quizzes',
-  'Discussion forums'
+  'Past Exam Papers',
+  'Study Guides',
+  'Video Tutorials',
+  'Interactive Quizzes',
+  'Mind Maps',
+  'Practice Tests',
+  'Notes & Summaries'
 ];
 
 interface SurveyFormProps {
@@ -89,22 +40,11 @@ interface SurveyFormProps {
 
 const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) => {
   const [formData, setFormData] = useState({
-    // existing
     subjects: [] as string[],
     studyFrequency: '',
     preferredResources: [] as string[],
     additionalComments: '',
-    contactEmail: '',
-    // new, non-breaking fields
-    otherSubject: '',
-    grade: '',
-    province: '',
-    deviceAccess: '',
-    connectivity: '',
-    preferredLanguage: '',
-    otherLanguage: '',
-    accessibilityNeeds: [] as string[],
-    desiredFeatures: [] as string[]
+    contactEmail: ''
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -131,15 +71,6 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
     }));
   };
 
-  const handleDesiredFeatureChange = (feature: string) => {
-    setFormData(prev => ({
-      ...prev,
-      desiredFeatures: prev.desiredFeatures.includes(feature)
-        ? prev.desiredFeatures.filter(f => f !== feature)
-        : [...prev.desiredFeatures, feature]
-    }));
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -162,42 +93,14 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
     setSubmitting(true);
     setError('');
 
-    // Prepare subjects, replacing 'Other' with specified text if present
-    const normalizedSubjects = (() => {
-      const base = formData.subjects.filter(s => s !== 'Other');
-      const other = formData.otherSubject.trim();
-      return other ? [...base, other] : base;
-    })();
-
-    // Stitch new fields into comments to avoid DB changes
-    const stitchedLines: string[] = [];
-    if (formData.grade) stitchedLines.push(`Grade: ${formData.grade}`);
-    if (formData.province) stitchedLines.push(`Province: ${formData.province}`);
-    if (formData.deviceAccess) stitchedLines.push(`Device: ${formData.deviceAccess}`);
-    if (formData.connectivity) stitchedLines.push(`Connectivity: ${formData.connectivity}`);
-    if (formData.preferredLanguage) stitchedLines.push(`Preferred language: ${formData.preferredLanguage}`);
-    if (formData.preferredLanguage === 'Other' && formData.otherLanguage.trim()) {
-      stitchedLines.push(`Preferred language (other): ${formData.otherLanguage.trim()}`);
-    }
-    if (formData.accessibilityNeeds.length > 0) stitchedLines.push(`Accessibility needs: ${formData.accessibilityNeeds.join(', ')}`);
-    if (formData.desiredFeatures.length > 0) stitchedLines.push(`Desired features: ${formData.desiredFeatures.join(', ')}`);
-    if (formData.subjects.includes('Other') && formData.otherSubject.trim()) {
-      stitchedLines.push(`Other subject: ${formData.otherSubject.trim()}`);
-    }
-
-    const combinedComments = [formData.additionalComments.trim(), ...stitchedLines]
-      .filter(Boolean)
-      .join('\n');
-
     const surveyData: SurveyData = {
       studentEmail,
-      subjects: normalizedSubjects,
+      subjects: formData.subjects,
       studyFrequency: formData.studyFrequency,
       preferredResources: formData.preferredResources,
-      additionalComments: combinedComments
+      additionalComments: formData.additionalComments
     };
 
-    // When submitting, map to snake_case
     try {
       const result = await submitSurvey(surveyData);
       
@@ -315,61 +218,6 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
                   </label>
                 ))}
               </div>
-              {formData.subjects.includes('Other') && (
-                <div className="mt-3">
-                  <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                    Please specify other subject
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.otherSubject}
-                    onChange={(e) => setFormData(prev => ({...prev, otherSubject: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="e.g., Agricultural Sciences"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* New: Grade */}
-            <div>
-              <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Grade
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {GRADES.map(grade => (
-                  <label key={grade} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="grade"
-                      value={grade}
-                      checked={formData.grade === grade}
-                      onChange={(e) => setFormData(prev => ({...prev, grade: e.target.value }))}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {grade}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* New: Province */}
-            <div>
-              <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Province
-              </label>
-              <select
-                value={formData.province}
-                onChange={(e) => setFormData(prev => ({...prev, province: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="">Select your province</option>
-                {PROVINCES.map(p => (
-                  <option key={p} value={p}>{p}</option>
-                ))}
-              </select>
             </div>
 
             <div>
@@ -378,130 +226,17 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
               </label>
               <div className="space-y-2">
                 {STUDY_FREQUENCIES.map(frequency => (
-                  <label key={frequency.value} className="flex items-center">
+                  <label key={frequency} className="flex items-center">
                     <input
                       type="radio"
                       name="studyFrequency"
-                      value={frequency.value}
-                      checked={formData.studyFrequency === frequency.value}
+                      value={frequency}
+                      checked={formData.studyFrequency === frequency}
                       onChange={(e) => setFormData(prev => ({...prev, studyFrequency: e.target.value}))}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {frequency.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* New: Device access */}
-            <div>
-              <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Device access at home
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {DEVICES.map(device => (
-                  <label key={device} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="deviceAccess"
-                      value={device}
-                      checked={formData.deviceAccess === device}
-                      onChange={(e) => setFormData(prev => ({...prev, deviceAccess: e.target.value }))}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {device}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* New: Connectivity */}
-            <div>
-              <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Connectivity
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {CONNECTIVITY.map(conn => (
-                  <label key={conn} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="connectivity"
-                      value={conn}
-                      checked={formData.connectivity === conn}
-                      onChange={(e) => setFormData(prev => ({...prev, connectivity: e.target.value }))}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {conn}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* New: Preferred language */}
-            <div>
-              <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Preferred language
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {LANGUAGES.map(lang => (
-                  <label key={lang} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="preferredLanguage"
-                      value={lang}
-                      checked={formData.preferredLanguage === lang}
-                      onChange={(e) => setFormData(prev => ({...prev, preferredLanguage: e.target.value }))}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {lang}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              {formData.preferredLanguage === 'Other' && (
-                <div className="mt-3">
-                  <label className="block text-sm font-medium text-gray-900 dark:text-white mb-1">
-                    Please specify language
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.otherLanguage}
-                    onChange={(e) => setFormData(prev => ({...prev, otherLanguage: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="e.g., Setswana"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* New: Accessibility needs */}
-            <div>
-              <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
-                Accessibility needs (select all that apply)
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {ACCESSIBILITY.map(opt => (
-                  <label key={opt} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.accessibilityNeeds.includes(opt)}
-                      onChange={() => setFormData(prev => ({
-                        ...prev,
-                        accessibilityNeeds: prev.accessibilityNeeds.includes(opt)
-                          ? prev.accessibilityNeeds.filter(o => o !== opt)
-                          : [...prev.accessibilityNeeds, opt]
-                      }))}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {opt}
+                      {frequency}
                     </span>
                   </label>
                 ))}
@@ -523,28 +258,6 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                       {resource}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* New: Desired features */}
-            <div>
-              <label className="block text-lg font-medium text-gray-900 dark:text-white mb-4">
-                What features would you like to see in the digital library? (Select all that apply)
-              </label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {DESIRED_FEATURES.map(feature => (
-                  <label key={feature} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.desiredFeatures.includes(feature)}
-                      onChange={() => handleDesiredFeatureChange(feature)}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {feature}
                     </span>
                   </label>
                 ))}
