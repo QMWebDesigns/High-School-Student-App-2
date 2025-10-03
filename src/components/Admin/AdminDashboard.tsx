@@ -41,14 +41,14 @@ const AdminDashboard: React.FC = () => {
         const frequencyCounts: { [key: string]: number } = {};
 
         surveysResult.surveys.forEach((survey: any) => {
-          if (survey.subjects && Array.isArray(survey.subjects)) {
-            survey.subjects.forEach((subject: string) => {
+          if (survey.most_needed_subjects && Array.isArray(survey.most_needed_subjects)) {
+            survey.most_needed_subjects.forEach((subject: string) => {
               subjectCounts[subject] = (subjectCounts[subject] || 0) + 1;
             });
           }
           
-          if (survey.studyFrequency) {
-            frequencyCounts[survey.studyFrequency] = (frequencyCounts[survey.studyFrequency] || 0) + 1;
+          if (survey.study_frequency) {
+            frequencyCounts[survey.study_frequency] = (frequencyCounts[survey.study_frequency] || 0) + 1;
           }
         });
 
