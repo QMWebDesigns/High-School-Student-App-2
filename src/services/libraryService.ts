@@ -423,3 +423,17 @@ export const uploadGuideFile = async (file: File, title: string) => {
   const path = `guides/files/${slug}-${Date.now()}.${ext}`;
   return uploadFileToStorage(bucket, path, file, true);
 };
+
+// Utility function to test download URLs
+export const testDownloadUrl = async (url: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const response = await fetch(url, { method: 'HEAD' });
+    if (response.ok) {
+      return { success: true };
+    } else {
+      return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+    }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+};
