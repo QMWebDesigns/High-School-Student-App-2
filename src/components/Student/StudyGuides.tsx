@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, GraduationCap, Download, Clock, BookOpen, Star, Eye } from 'lucide-react';
+import { getStudyGuides } from '../../services/libraryService';
 
 interface StudyGuide {
   id: string;
@@ -205,20 +206,25 @@ const StudyGuides: React.FC = () => {
 
   useEffect(() => {
     const fetchStudyGuides = async () => {
-      // For now, use sample data. In production, uncomment the lines below to fetch real data:
-      // import { getStudyGuides } from '../../services/libraryService';
-      // const result = await getStudyGuides();
-      // if (result.success) {
-      //   setGuides(result.guides);
-      //   setFilteredGuides(result.guides);
-      // }
-      
-      // Simulate loading time for better UX
-      setTimeout(() => {
+      try {
+        const result = await getStudyGuides();
+        if (result.success) {
+          setGuides(result.guides);
+          setFilteredGuides(result.guides);
+        } else {
+          console.error('Failed to fetch study guides:', result.error);
+          // Fallback to sample data if API fails
+          setGuides(sampleGuides);
+          setFilteredGuides(sampleGuides);
+        }
+      } catch (error) {
+        console.error('Error fetching study guides:', error);
+        // Fallback to sample data if API fails
         setGuides(sampleGuides);
         setFilteredGuides(sampleGuides);
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     };
 
     fetchStudyGuides();

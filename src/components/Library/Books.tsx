@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { BookOpen, ExternalLink } from 'lucide-react';
-import { SAMPLE_BOOKS } from '../../data/sampleContent';
+import { getBooks } from '../../services/libraryService';
 
 const GRADES = ['10', '11', '12'];
 const SUBJECTS = [
@@ -15,13 +15,36 @@ const SUBJECTS = [
 const Books: React.FC = () => {
   const [grade, setGrade] = useState('');
   const [subject, setSubject] = useState('');
+  const [books, setBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const result = await getBooks();
+        if (result.success) {
+          setBooks(result.books);
+        } else {
+          setError(result.error || 'Failed to load books');
+        }
+      } catch (err) {
+        setError('An error occurred while loading books');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBooks();
+  }, []);
 
   const filtered = useMemo(() => {
-    return SAMPLE_BOOKS.filter(item => (
-      (grade === '' || item.grade === grade) &&
+    return books.filter(item => (
+      (grade === '' || String(item.grade) === grade) &&
       (subject === '' || item.subject === subject)
     ));
-  }, [grade, subject]);
+  }, [books, grade, subject]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -43,23 +66,36 @@ const Books: React.FC = () => {
           <button onClick={() => { setGrade(''); setSubject(''); }} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">Clear</button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(item => (
-            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow">
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-                  <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">Grade {item.grade}</span>
+        {loading ? (
+          <div className="text-center py-12">
+            <span className="text-gray-600 dark:text-gray-400">Loading books...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-600 dark:text-red-400">{error}</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map(item => (
+              <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <BookOpen className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                    <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">Grade {item.grade}</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">by {item.author}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
+                  <div className="flex space-x-2">
+                    {item.downloadUrl && (
+                      <a href={item.downloadUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline">
+                        Download <ExternalLink className="h-4 w-4 ml-1" />
+                      </a>
+                    )}
+                  </div>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
-                <a href={item.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline">
-                  Open book <ExternalLink className="h-4 w-4 ml-1" />
-                </a>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

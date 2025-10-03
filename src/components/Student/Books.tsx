@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, BookOpen, Download, Star, Grid, List } from 'lucide-react';
+import { getBooks } from '../../services/libraryService';
 
 interface Book {
   id: string;
@@ -140,20 +141,25 @@ const Books: React.FC = () => {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      // For now, use sample data. In production, uncomment the lines below to fetch real data:
-      // import { getBooks } from '../../services/libraryService';
-      // const result = await getBooks();
-      // if (result.success) {
-      //   setBooks(result.books);
-      //   setFilteredBooks(result.books);
-      // }
-      
-      // Simulate loading time for better UX
-      setTimeout(() => {
+      try {
+        const result = await getBooks();
+        if (result.success) {
+          setBooks(result.books);
+          setFilteredBooks(result.books);
+        } else {
+          console.error('Failed to fetch books:', result.error);
+          // Fallback to sample data if API fails
+          setBooks(sampleBooks);
+          setFilteredBooks(sampleBooks);
+        }
+      } catch (error) {
+        console.error('Error fetching books:', error);
+        // Fallback to sample data if API fails
         setBooks(sampleBooks);
         setFilteredBooks(sampleBooks);
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     };
 
     fetchBooks();

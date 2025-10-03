@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Notebook, ExternalLink } from 'lucide-react';
-import { papers } from '../../lib/supabase';
+import { getStudyGuides } from '../../services/libraryService';
 
 const GRADES = ['10', '11', '12'];
 const SUBJECTS = [
@@ -25,15 +25,9 @@ const StudyGuides: React.FC = () => {
       setLoading(true);
       setError('');
       try {
-        const result = await papers.getPapers();
-        if (result.data) {
-          // Filter for study guides by title or exam_type
-          const studyGuides = result.data.filter(paper => {
-            const title = paper.title?.toLowerCase() || '';
-            const examType = paper.exam_type?.toLowerCase() || '';
-            return title.includes('study guide') || examType.includes('study guide');
-          });
-          setGuides(studyGuides);
+        const result = await getStudyGuides();
+        if (result.success) {
+          setGuides(result.guides);
         } else {
           setError(result.error || 'Failed to load study guides');
         }
@@ -87,10 +81,20 @@ const StudyGuides: React.FC = () => {
                     <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">Grade {item.grade}</span>
                   </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">by {item.author}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
-                  <a href={item.download_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline">
-                    Open guide <ExternalLink className="h-4 w-4 ml-1" />
-                  </a>
+                  <div className="flex space-x-2">
+                    {item.previewUrl && (
+                      <a href={item.previewUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline">
+                        Preview <ExternalLink className="h-4 w-4 ml-1" />
+                      </a>
+                    )}
+                    {item.downloadUrl && (
+                      <a href={item.downloadUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline">
+                        Download <ExternalLink className="h-4 w-4 ml-1" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

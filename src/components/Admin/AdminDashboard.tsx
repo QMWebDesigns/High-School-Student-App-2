@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Upload, FileText, TrendingUp, Users, RefreshCw } from 'lucide-react';
+import { Upload, FileText, TrendingUp, Users, RefreshCw, GraduationCap, BookOpen } from 'lucide-react';
 import { getSurveys, getPapers } from '../../services/supabaseService';
 import UploadPaper from './UploadPaper';
 import PaperManagement from './PaperManagement';
+import StudyGuideManagement from './StudyGuideManagement';
+import BookManagement from './BookManagement';
 import { SkeletonCard } from '../Common/SkeletonLoader';
 
 interface SurveyAnalytics {
@@ -14,7 +16,7 @@ interface SurveyAnalytics {
 }
 
 const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage' | 'study-guides' | 'books'>('dashboard');
   const [analytics, setAnalytics] = useState<SurveyAnalytics>({
     subjectCounts: {},
     frequencyCounts: {},
@@ -108,11 +110,13 @@ const AdminDashboard: React.FC = () => {
           {[
             { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
             { id: 'upload', label: 'Upload Paper', icon: Upload },
-            { id: 'manage', label: 'Manage Papers', icon: FileText }
+            { id: 'manage', label: 'Manage Papers', icon: FileText },
+            { id: 'study-guides', label: 'Study Guides', icon: GraduationCap },
+            { id: 'books', label: 'Books', icon: BookOpen }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage')}
+              onClick={() => setActiveTab(id as 'dashboard' | 'upload' | 'manage' | 'study-guides' | 'books')}
               className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                 activeTab === id
                   ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-200'
@@ -236,6 +240,8 @@ const AdminDashboard: React.FC = () => {
 
       {activeTab === 'upload' && <UploadPaper onUploadSuccess={fetchAnalytics} />}
       {activeTab === 'manage' && <PaperManagement onDataChange={fetchAnalytics} />}
+      {activeTab === 'study-guides' && <StudyGuideManagement />}
+      {activeTab === 'books' && <BookManagement />}
     </div>
   );
 };
