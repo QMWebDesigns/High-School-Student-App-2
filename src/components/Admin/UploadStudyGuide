@@ -83,7 +83,7 @@ const UploadStudyGuide = () => {
         estimatedTime: formData.estimatedTime || '',
         downloadUrl: uploadRes.publicUrl,
         previewUrl: previewUrl || '',
-        pages: formData.pages ? parseInt(formData.pages) : 0,
+        pages: parseInt(formData.pages) || 0,
         format: formData.format,
         rating: 0,
         downloads: 0,

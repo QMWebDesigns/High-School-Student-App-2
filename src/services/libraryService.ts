@@ -137,6 +137,11 @@ export const getStudyGuides = async (useCache: boolean = true) => {
 
 export const saveBook = async (book: Omit<Book, 'id' | 'createdAt'>) => {
   try {
+    // Validate required fields
+    if (!book.title || !book.author || !book.subject || !book.grade) {
+      return { success: false, error: 'Missing required fields: title, author, subject, or grade' };
+    }
+
     const { data, error } = await supabase
       .from('books')
       .insert({
@@ -162,15 +167,24 @@ export const saveBook = async (book: Omit<Book, 'id' | 'createdAt'>) => {
     booksCache = null;
     booksCacheTimestamp = null;
 
-    if (error) return { success: false, id: undefined as unknown as string, error: error.message };
+    if (error) {
+      console.error('Database insert error:', error);
+      return { success: false, id: undefined as unknown as string, error: error.message };
+    }
     return { success: true, id: String((data as any).id), error: null };
   } catch (error: unknown) {
+    console.error('Save book error:', error);
     return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
   }
 };
 
 export const saveStudyGuide = async (guide: Omit<StudyGuide, 'id' | 'createdAt'>) => {
   try {
+    // Validate required fields
+    if (!guide.title || !guide.subject || !guide.grade || !guide.author) {
+      return { success: false, error: 'Missing required fields: title, subject, grade, or author' };
+    }
+
     const { data, error } = await supabase
       .from('study_guides')
       .insert({
@@ -199,9 +213,13 @@ export const saveStudyGuide = async (guide: Omit<StudyGuide, 'id' | 'createdAt'>
     guidesCache = null;
     guidesCacheTimestamp = null;
 
-    if (error) return { success: false, id: undefined as unknown as string, error: error.message };
+    if (error) {
+      console.error('Database insert error:', error);
+      return { success: false, id: undefined as unknown as string, error: error.message };
+    }
     return { success: true, id: String((data as any).id), error: null };
   } catch (error: unknown) {
+    console.error('Save study guide error:', error);
     return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
   }
 };
@@ -348,16 +366,28 @@ const uploadFileToStorage = async (
   file: File,
   upsert: boolean = false
 ): Promise<{ success: boolean; publicUrl?: string; path?: string; error?: string }> => {
-  const { error: uploadError } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, { upsert, contentType: file.type });
+  try {
+    // Validate file size (50MB limit)
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    if (file.size > maxSize) {
+      return { success: false, error: 'File size exceeds 50MB limit' };
+    }
 
-  if (uploadError) {
-    return { success: false, error: uploadError.message };
+    const { error: uploadError } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, { upsert, contentType: file.type });
+
+    if (uploadError) {
+      console.error('Storage upload error:', uploadError);
+      return { success: false, error: uploadError.message };
+    }
+
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return { success: true, publicUrl: data.publicUrl, path };
+  } catch (error: unknown) {
+    console.error('Upload error:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Upload failed' };
   }
-
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return { success: true, publicUrl: data.publicUrl, path };
 };
 
 // Public helpers for books
