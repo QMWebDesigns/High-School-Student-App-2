@@ -463,13 +463,33 @@ const StudyGuides: React.FC = () => {
 
                 <div className="flex space-x-2">
                   {guide.previewUrl && (
-                    <button className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <button 
+                      onClick={() => {
+                        console.log('Previewing guide:', guide.title, 'URL:', guide.previewUrl);
+                        if (guide.previewUrl) {
+                          window.open(guide.previewUrl, '_blank');
+                        } else {
+                          alert('Preview URL not available');
+                        }
+                      }}
+                      className="flex-1 flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
                       <Eye className="h-4 w-4 mr-1" />
                       Preview
                     </button>
                   )}
                   {guide.downloadUrl && (
-                    <button className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <button 
+                      onClick={() => {
+                        console.log('Downloading guide:', guide.title, 'URL:', guide.downloadUrl);
+                        if (guide.downloadUrl) {
+                          window.open(guide.downloadUrl, '_blank');
+                        } else {
+                          alert('Download URL not available');
+                        }
+                      }}
+                      className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
                       <Download className="h-4 w-4 mr-1" />
                       Download
                     </button>

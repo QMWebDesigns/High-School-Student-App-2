@@ -391,7 +391,17 @@ const Books: React.FC = () => {
                   </p>
                   
                   {book.downloadUrl && (
-                    <button className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <button 
+                      onClick={() => {
+                        console.log('Downloading book:', book.title, 'URL:', book.downloadUrl);
+                        if (book.downloadUrl) {
+                          window.open(book.downloadUrl, '_blank');
+                        } else {
+                          alert('Download URL not available');
+                        }
+                      }}
+                      className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </button>
@@ -437,7 +447,17 @@ const Books: React.FC = () => {
                       
                       <div className="ml-4">
                         {book.downloadUrl && (
-                          <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                          <button 
+                            onClick={() => {
+                              console.log('Downloading book:', book.title, 'URL:', book.downloadUrl);
+                              if (book.downloadUrl) {
+                                window.open(book.downloadUrl, '_blank');
+                              } else {
+                                alert('Download URL not available');
+                              }
+                            }}
+                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
                             <Download className="h-4 w-4 mr-2" />
                             Download
                           </button>

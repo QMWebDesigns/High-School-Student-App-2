@@ -7,11 +7,11 @@ let papersCacheTimestamp: number | null = null;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export interface SurveyData {
-  studentEmail: string;
-  subjects: string[];
-  studyFrequency: string;
-  preferredResources: string[];
-  additionalComments: string;
+  student_email: string;
+  most_needed_subjects: string[];
+  study_frequency: string;
+  preferred_resources: string[];
+  additional_comments: string;
   timestamp?: unknown;
 }
 
@@ -96,11 +96,11 @@ export const getSurveys = async () => {
     if (error) throw error;
     const surveys: (SurveyData & { id: string })[] = (data || []).map((row: any) => ({
       id: String(row.id),
-      studentEmail: row.studentEmail,
-      subjects: row.subjects,
-      studyFrequency: row.studyFrequency,
-      preferredResources: row.preferredResources,
-      additionalComments: row.additionalComments,
+      student_email: row.student_email,
+      most_needed_subjects: row.most_needed_subjects,
+      study_frequency: row.study_frequency,
+      preferred_resources: row.preferred_resources,
+      additional_comments: row.additional_comments,
       timestamp: row.timestamp
     }));
     return { success: true, surveys, error: null };
