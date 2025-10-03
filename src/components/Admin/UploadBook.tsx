@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Upload, Book as BookIcon, CheckCircle } from 'lucide-react';
-import { supabase } from '../../lib/supabase'; // Import supabase client directly
+import { saveBook, uploadBookFile, uploadBookCover } from '../../services/libraryService';
 
 const UploadBook: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  const [coverFile, setCoverFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     author: '',
@@ -16,49 +17,11 @@ const UploadBook: React.FC = () => {
     publisher: '',
     year: '',
     pages: '',
-    isbn: ''
+    isbn: '',
+    format: 'PDF'
   });
 
-  const uploadBookToStorage = async (file: File, metadata: any) => {
-    try {
-      // Generate unique file name
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
-      
-      // Upload to Supabase storage
-      const { data, error } = await supabase.storage
-        .from('textbooks')
-        .upload(fileName, file);
-
-      if (error) {
-        throw error;
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('textbooks')
-        .getPublicUrl(fileName);
-
-      return { success: true, publicUrl, fileName };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  };
-
-  const addBookToDatabase = async (bookData: any) => {
-    try {
-      const { data, error } = await supabase
-        .from('books')
-        .insert([bookData])
-        .select();
-
-      if (error) throw error;
-      
-      return { success: true, data };
-    } catch (error: any) {
-      return { success: false, error: error.message };
-    }
-  };
+  // These functions are now handled by libraryService
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,37 +39,40 @@ const UploadBook: React.FC = () => {
     setSuccess(false);
 
     try {
-      // Upload file to storage
-      const uploadRes = await uploadBookToStorage(file, {
-        title: formData.title,
-        grade: parseInt(formData.grade),
-        subject: formData.subject,
-        author: formData.author,
-        publisher: formData.publisher || undefined,
-        year: formData.year ? parseInt(formData.year) : undefined
-      });
+      // Upload cover image if provided
+      let coverImageUrl = '';
+      if (coverFile) {
+        const coverRes = await uploadBookCover(coverFile, formData.title);
+        if (!coverRes.success) {
+          throw new Error(coverRes.error || 'Failed to upload cover image');
+        }
+        coverImageUrl = coverRes.publicUrl || '';
+      }
 
+      // Upload book file
+      const uploadRes = await uploadBookFile(file, formData.title);
       if (!uploadRes.success || !uploadRes.publicUrl) {
         throw new Error(uploadRes.error || 'Upload failed');
       }
 
-      // Save book metadata to database
+      // Save book metadata to database using libraryService
       const bookData = {
         title: formData.title,
         author: formData.author,
         subject: formData.subject,
-        grade: parseInt(formData.grade),
-        description: formData.description || null,
-        download_url: uploadRes.publicUrl,
-        publisher: formData.publisher || null,
-        year: formData.year ? parseInt(formData.year) : null,
-        pages: formData.pages ? parseInt(formData.pages) : null,
-        isbn: formData.isbn || null,
-        file_name: uploadRes.fileName,
-        created_at: new Date().toISOString()
+        grade: formData.grade,
+        description: formData.description || '',
+        coverImage: coverImageUrl || '/api/placeholder/300/400',
+        downloadUrl: uploadRes.publicUrl,
+        rating: 0,
+        pages: parseInt(formData.pages) || 0,
+        format: formData.format,
+        publisher: formData.publisher || '',
+        year: formData.year || new Date().getFullYear().toString(),
+        isbn: formData.isbn || ''
       };
 
-      const addRes = await addBookToDatabase(bookData);
+      const addRes = await saveBook(bookData);
 
       if (!addRes.success) {
         throw new Error(addRes.error || 'Failed to save book');
@@ -115,9 +81,10 @@ const UploadBook: React.FC = () => {
       setSuccess(true);
       setFormData({
         title: '', author: '', subject: '', grade: '', description: '',
-        publisher: '', year: '', pages: '', isbn: ''
+        publisher: '', year: '', pages: '', isbn: '', format: 'PDF'
       });
       setFile(null);
+      setCoverFile(null);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -232,7 +199,16 @@ const UploadBook: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
-            <div className="md:col-span-2">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cover Image (Optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setCoverFile(e.target.files && e.target.files[0] ? e.target.files[0] : null)}
+                className="w-full text-sm text-gray-600 dark:text-gray-300"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PDF file</label>
               <input
                 type="file"

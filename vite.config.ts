@@ -27,6 +27,18 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: true
+    host: true,
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin'
+    }
+  },
+  preview: {
+    port: 4173,
+    host: true,
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin'
+    }
   }
 });
