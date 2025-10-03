@@ -33,6 +33,36 @@ const StudentDashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<'title' | 'year' | 'subject'>('title');
   const itemsPerPage = 12;
 
+  const normalizedSample = useMemo(() => SAMPLE_PAPERS.map((p) => ({
+    id: p.id,
+    title: p.title,
+    grade: p.grade,
+    subject: p.subject,
+    province: p.province,
+    examType: p.examType,
+    year: p.year,
+    description: p.description,
+    publisher: p.publisher || 'Department of Education',
+    format: 'pdf',
+    identifier: p.id,
+    downloadUrl: p.download_url
+  })), []);
+
+  // Parse URL parameters for initial search/filters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const searchParam = urlParams.get('search');
+    const subjectParam = urlParams.get('subject');
+    
+    if (searchParam) {
+      setSearchTerm(searchParam);
+    }
+    if (subjectParam) {
+      setFilters(prev => ({ ...prev, subject: subjectParam }));
+    }
+  }, [location.search]);
+
+
   const fetchPapers = async () => {
     setLoading(true);
     try {
