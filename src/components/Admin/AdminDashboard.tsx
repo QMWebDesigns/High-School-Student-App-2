@@ -11,8 +11,10 @@ import { SkeletonCard } from '../Common/SkeletonLoader';
 interface SurveyAnalytics {
   subjectCounts: { [key: string]: number };
   frequencyCounts: { [key: string]: number };
+  resourceCounts: { [key: string]: number };
   totalSurveys: number;
   totalPapers: number;
+  allSurveys: any[];
 }
 
 const AdminDashboard: React.FC = () => {
@@ -20,8 +22,10 @@ const AdminDashboard: React.FC = () => {
   const [analytics, setAnalytics] = useState<SurveyAnalytics>({
     subjectCounts: {},
     frequencyCounts: {},
+    resourceCounts: {},
     totalSurveys: 0,
-    totalPapers: 0
+    totalPapers: 0,
+    allSurveys: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +43,7 @@ const AdminDashboard: React.FC = () => {
       if (surveysResult.success && papersResult.success) {
         const subjectCounts: { [key: string]: number } = {};
         const frequencyCounts: { [key: string]: number } = {};
+        const resourceCounts: { [key: string]: number } = {};
 
         surveysResult.surveys.forEach((survey: any) => {
           if (survey.most_needed_subjects && Array.isArray(survey.most_needed_subjects)) {
@@ -50,13 +55,21 @@ const AdminDashboard: React.FC = () => {
           if (survey.study_frequency) {
             frequencyCounts[survey.study_frequency] = (frequencyCounts[survey.study_frequency] || 0) + 1;
           }
+
+          if (survey.preferred_resources && Array.isArray(survey.preferred_resources)) {
+            survey.preferred_resources.forEach((resource: string) => {
+              resourceCounts[resource] = (resourceCounts[resource] || 0) + 1;
+            });
+          }
         });
 
         setAnalytics({
           subjectCounts,
           frequencyCounts,
+          resourceCounts,
           totalSurveys: surveysResult.surveys.length,
-          totalPapers: papersResult.papers.length
+          totalPapers: papersResult.papers.length,
+          allSurveys: surveysResult.surveys
         });
       } else {
         const err = surveysResult.error || papersResult.error || 'Failed to load analytics';
@@ -81,6 +94,11 @@ const AdminDashboard: React.FC = () => {
 
   const frequencyData = Object.entries(analytics.frequencyCounts).map(([frequency, count]) => ({
     frequency,
+    count
+  }));
+
+  const resourceData = Object.entries(analytics.resourceCounts).map(([resource, count]) => ({
+    resource,
     count
   }));
 
@@ -183,57 +201,163 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {!loading && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Subject Interest
-                </h3>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={subjectData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="subject" 
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                        fontSize={12}
-                      />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#3B82F6" />
-                    </BarChart>
-                  </ResponsiveContainer>
+            <>
+              {/* Charts Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    Subject Interest
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={subjectData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="subject" 
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                          fontSize={12}
+                        />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#3B82F6" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    Study Frequency
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={frequencyData}
+                          dataKey="count"
+                          nameKey="frequency"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          label
+                        >
+                          {frequencyData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    Preferred Resources
+                  </h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={resourceData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="resource" 
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                          fontSize={10}
+                        />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#14B8A6" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Study Frequency
-                </h3>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={frequencyData}
-                        dataKey="count"
-                        nameKey="frequency"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        label
-                      >
-                        {frequencyData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+              {/* Survey Details Table */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    Survey Responses ({analytics.totalSurveys} total)
+                  </h3>
                 </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Student Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Subjects Needed
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Study Frequency
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Preferred Resources
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Comments
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          Date
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {analytics.allSurveys.map((survey, index) => (
+                        <tr key={survey.id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {survey.student_email}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                            <div className="flex flex-wrap gap-1">
+                              {survey.most_needed_subjects?.map((subject: string, idx: number) => (
+                                <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                  {subject}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              {survey.study_frequency}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                            <div className="flex flex-wrap gap-1">
+                              {survey.preferred_resources?.map((resource: string, idx: number) => (
+                                <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                                  {resource}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs">
+                            <div className="truncate" title={survey.additional_comments}>
+                              {survey.additional_comments || 'No comments'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {survey.timestamp ? new Date(survey.timestamp).toLocaleDateString() : 'N/A'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {analytics.allSurveys.length === 0 && (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    No survey responses yet
+                  </div>
+                )}
               </div>
-            </div>
+            </>
           )}
         </div>
       )}
