@@ -28,12 +28,10 @@ export interface PaperMetadata {
 export const uploadPDFToGitHub = async (file: File, metadata: PaperMetadata): Promise<{ success: boolean; downloadUrl?: string; error?: string }> => {
   try {
     // If serverless proxy is available, prefer it (avoids CORS and hides token)
-    const proxyUrlRaw = (import.meta as any).env?.VITE_UPLOAD_PROXY_URL as string | undefined;
-    const proxyUrl = proxyUrlRaw ? proxyUrlRaw.replace(/\/+$/, '') : undefined;
+    const proxyUrl = (import.meta as any).env?.VITE_UPLOAD_PROXY_URL as string | undefined;
     if (proxyUrl) {
       const base64 = await fileToBase64(file);
-      // Change from Netlify function to Vercel API route
-      const proxyRes = await fetch('/api/upload-github', {
+      const proxyRes = await fetch(`${proxyUrl}/.netlify/functions/upload-github`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ metadata, base64Content: base64, fileName: file.name })
