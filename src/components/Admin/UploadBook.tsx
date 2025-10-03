@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, Book as BookIcon, CheckCircle } from 'lucide-react';
-import { storage, books } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase'; // Import supabase client directly
 
 const UploadBook: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -19,6 +19,47 @@ const UploadBook: React.FC = () => {
     isbn: ''
   });
 
+  const uploadBookToStorage = async (file: File, metadata: any) => {
+    try {
+      // Generate unique file name
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      
+      // Upload to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('textbooks')
+        .upload(fileName, file);
+
+      if (error) {
+        throw error;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('textbooks')
+        .getPublicUrl(fileName);
+
+      return { success: true, publicUrl, fileName };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const addBookToDatabase = async (bookData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .insert([bookData])
+        .select();
+
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error: any) {
+      return { success: false, error: error.message };
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
@@ -35,7 +76,8 @@ const UploadBook: React.FC = () => {
     setSuccess(false);
 
     try {
-      const uploadRes = await storage.uploadBook(file, {
+      // Upload file to storage
+      const uploadRes = await uploadBookToStorage(file, {
         title: formData.title,
         grade: parseInt(formData.grade),
         subject: formData.subject,
@@ -48,18 +90,23 @@ const UploadBook: React.FC = () => {
         throw new Error(uploadRes.error || 'Upload failed');
       }
 
-      const addRes = await books.addBook({
+      // Save book metadata to database
+      const bookData = {
         title: formData.title,
         author: formData.author,
         subject: formData.subject,
         grade: parseInt(formData.grade),
-        description: formData.description || undefined,
+        description: formData.description || null,
         download_url: uploadRes.publicUrl,
-        publisher: formData.publisher || undefined,
-        year: formData.year ? parseInt(formData.year) : undefined,
-        pages: formData.pages ? parseInt(formData.pages) : undefined,
-        isbn: formData.isbn || undefined
-      });
+        publisher: formData.publisher || null,
+        year: formData.year ? parseInt(formData.year) : null,
+        pages: formData.pages ? parseInt(formData.pages) : null,
+        isbn: formData.isbn || null,
+        file_name: uploadRes.fileName,
+        created_at: new Date().toISOString()
+      };
+
+      const addRes = await addBookToDatabase(bookData);
 
       if (!addRes.success) {
         throw new Error(addRes.error || 'Failed to save book');

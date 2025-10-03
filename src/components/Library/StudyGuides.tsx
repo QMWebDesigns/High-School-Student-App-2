@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { Notebook, ExternalLink } from 'lucide-react';
-import { SAMPLE_STUDY_GUIDES } from '../../data/sampleContent';
+import { papers } from '../../lib/supabase';
 
 const GRADES = ['10', '11', '12'];
 const SUBJECTS = [
@@ -15,13 +16,40 @@ const SUBJECTS = [
 const StudyGuides: React.FC = () => {
   const [grade, setGrade] = useState('');
   const [subject, setSubject] = useState('');
+  const [guides, setGuides] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const filtered = useMemo(() => {
-    return SAMPLE_STUDY_GUIDES.filter(item => (
-      (grade === '' || item.grade === grade) &&
-      (subject === '' || item.subject === subject)
-    ));
-  }, [grade, subject]);
+  useEffect(() => {
+    const fetchGuides = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const result = await papers.getPapers();
+        if (result.data) {
+          // Filter for study guides by title or exam_type
+          const studyGuides = result.data.filter(paper => {
+            const title = paper.title?.toLowerCase() || '';
+            const examType = paper.exam_type?.toLowerCase() || '';
+            return title.includes('study guide') || examType.includes('study guide');
+          });
+          setGuides(studyGuides);
+        } else {
+          setError(result.error || 'Failed to load study guides');
+        }
+      } catch (err) {
+        setError('An error occurred while loading study guides');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGuides();
+  }, []);
+
+  const filtered = guides.filter(item => (
+    (grade === '' || String(item.grade) === grade) &&
+    (subject === '' || item.subject === subject)
+  ));
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
@@ -43,23 +71,31 @@ const StudyGuides: React.FC = () => {
           <button onClick={() => { setGrade(''); setSubject(''); }} className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300">Clear</button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map(item => (
-            <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow">
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <Notebook className="h-8 w-8 text-primary-600 dark:text-primary-400" />
-                  <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">Grade {item.grade}</span>
+        {loading ? (
+          <div className="text-center py-12">
+            <span className="text-gray-600 dark:text-gray-400">Loading study guides...</span>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-red-600 dark:text-red-400">{error}</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filtered.map(item => (
+              <div key={item.id} className="bg-white dark:bg-gray-800 rounded-lg shadow">
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <Notebook className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+                    <span className="text-xs bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">Grade {item.grade}</span>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
+                  <a href={item.download_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline">
+                    Open guide <ExternalLink className="h-4 w-4 ml-1" />
+                  </a>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{item.description}</p>
-                <a href={item.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary-600 dark:text-primary-400 hover:underline">
-                  Open guide <ExternalLink className="h-4 w-4 ml-1" />
-                </a>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
