@@ -94,11 +94,11 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
     setError('');
 
     const surveyData: SurveyData = {
-      studentEmail,
-      subjects: formData.subjects,
-      studyFrequency: formData.studyFrequency,
-      preferredResources: formData.preferredResources,
-      additionalComments: formData.additionalComments
+      student_email: studentEmail,
+      most_needed_subjects: formData.subjects,
+      study_frequency: formData.studyFrequency,
+      preferred_resources: formData.preferredResources,
+      additional_comments: formData.additionalComments
     };
 
     try {
