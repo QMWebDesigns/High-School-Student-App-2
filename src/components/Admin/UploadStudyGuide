@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, GraduationCap, CheckCircle } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { saveStudyGuide, uploadGuideFile, uploadGuidePreview } from '../../services/libraryService';
 
 const UploadStudyGuide = () => {
   const [file, setFile] = useState(null);
@@ -36,62 +36,7 @@ const UploadStudyGuide = () => {
   const DIFFICULTIES = ['Beginner', 'Intermediate', 'Advanced'];
   const FORMATS = ['PDF', 'EPUB', 'Interactive'];
 
-  const uploadStudyGuideFile = async (file, title) => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `study-guides/${Date.now()}-${title.replace(/[^a-zA-Z0-9]/g, '-')}.${fileExt}`;
-      
-      const { data, error } = await supabase.storage
-        .from('study-guides')
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('study-guides')
-        .getPublicUrl(fileName);
-
-      return { success: true, publicUrl, fileName };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
-
-  const uploadPreviewImage = async (file, title) => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `previews/${Date.now()}-${title.replace(/[^a-zA-Z0-9]/g, '-')}.${fileExt}`;
-      
-      const { data, error } = await supabase.storage
-        .from('previews')
-        .upload(fileName, file);
-
-      if (error) throw error;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('previews')
-        .getPublicUrl(fileName);
-
-      return { success: true, publicUrl, fileName };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
-
-  const addStudyGuideToDatabase = async (guideData) => {
-    try {
-      const { data, error } = await supabase
-        .from('study_guides')
-        .insert([guideData])
-        .select();
-
-      if (error) throw error;
-      
-      return { success: true, data };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  };
+  // These functions are now handled by libraryService
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -113,7 +58,7 @@ const UploadStudyGuide = () => {
       
       // Upload preview image if provided
       if (previewFile) {
-        const previewRes = await uploadPreviewImage(previewFile, formData.title);
+        const previewRes = await uploadGuidePreview(previewFile, formData.title);
         if (!previewRes.success) {
           throw new Error(previewRes.error || 'Failed to upload preview image');
         }
@@ -121,31 +66,32 @@ const UploadStudyGuide = () => {
       }
 
       // Upload study guide file
-      const uploadRes = await uploadStudyGuideFile(file, formData.title);
+      const uploadRes = await uploadGuideFile(file, formData.title);
       if (!uploadRes.success || !uploadRes.publicUrl) {
         throw new Error(uploadRes.error || 'Failed to upload study guide');
       }
 
-      // Save to database
+      // Save to database using libraryService
       const guideData = {
         title: formData.title,
         subject: formData.subject,
         grade: formData.grade,
-        topic: formData.topic || null,
-        description: formData.description || null,
+        topic: formData.topic || '',
+        description: formData.description || '',
         author: formData.author,
         difficulty: formData.difficulty,
-        estimated_time: formData.estimatedTime || null,
-        download_url: uploadRes.publicUrl,
-        preview_url: previewUrl || null,
-        pages: formData.pages ? parseInt(formData.pages) : null,
+        estimatedTime: formData.estimatedTime || '',
+        downloadUrl: uploadRes.publicUrl,
+        previewUrl: previewUrl || '',
+        pages: formData.pages ? parseInt(formData.pages) : 0,
         format: formData.format,
-        file_name: uploadRes.fileName,
-        created_at: new Date().toISOString(),
-        last_updated: new Date().toISOString()
+        rating: 0,
+        downloads: 0,
+        lastUpdated: new Date().toISOString().split('T')[0],
+        tags: []
       };
 
-      const addRes = await addStudyGuideToDatabase(guideData);
+      const addRes = await saveStudyGuide(guideData);
 
       if (!addRes.success) {
         throw new Error(addRes.error || 'Failed to save study guide');
