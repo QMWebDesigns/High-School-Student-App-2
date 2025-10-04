@@ -25,7 +25,9 @@ const Books: React.FC = () => {
       setError('');
       try {
         const result = await getBooks();
+        console.log('Library Books fetch result:', result);
         if (result.success) {
+          console.log('Library Books: Using real data:', result.books.length, 'books');
           setBooks(result.books);
         } else {
           setError(result.error || 'Failed to load books');

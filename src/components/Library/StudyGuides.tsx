@@ -26,7 +26,9 @@ const StudyGuides: React.FC = () => {
       setError('');
       try {
         const result = await getStudyGuides();
+        console.log('Library StudyGuides fetch result:', result);
         if (result.success) {
+          console.log('Library StudyGuides: Using real data:', result.guides.length, 'guides');
           setGuides(result.guides);
         } else {
           setError(result.error || 'Failed to load study guides');

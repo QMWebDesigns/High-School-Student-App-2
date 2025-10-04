@@ -428,13 +428,33 @@ export const uploadGuideFile = async (file: File, title: string) => {
 // Utility function to test download URLs
 export const testDownloadUrl = async (url: string): Promise<{ success: boolean; error?: string }> => {
   try {
+    console.log('Testing download URL:', url);
     const response = await fetch(url, { method: 'HEAD' });
+    console.log('URL test result:', response.status, response.statusText);
     if (response.ok) {
       return { success: true };
     } else {
       return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
     }
   } catch (error) {
+    console.error('URL test error:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+};
+
+// Utility function to validate and fix download URLs
+export const validateDownloadUrl = (url: string | undefined | null): string | null => {
+  if (!url || url === '#' || url === '' || url === null) {
+    console.warn('Invalid download URL:', url);
+    return null;
+  }
+  
+  // Check if it's a valid URL
+  try {
+    new URL(url);
+    return url;
+  } catch {
+    console.warn('Malformed download URL:', url);
+    return null;
   }
 };

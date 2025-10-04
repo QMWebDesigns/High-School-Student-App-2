@@ -41,13 +41,18 @@ const PastPapers: React.FC = () => {
     setLoading(true);
     setError('');
     try {
+      console.log('Library PastPapers: Fetching papers from lib/supabase...');
       const result = await papers.getPapers();
+      console.log('Library PastPapers fetch result:', result);
       if (result.data) {
+        console.log('Library PastPapers: Using real data:', result.data.length, 'papers');
         setPapersList(result.data);
       } else {
+        console.error('Library PastPapers: Failed to fetch papers:', result.error);
         setError(result.error || 'Failed to load papers');
       }
     } catch (err: any) {
+      console.error('Library PastPapers: Error fetching papers:', err);
       setError('An error occurred while loading papers');
     } finally {
       setLoading(false);
@@ -119,7 +124,23 @@ const PastPapers: React.FC = () => {
   };
 
   const handleDownload = async (paper: any) => {
-    await paper.downloadPaper(paper.id, paper);
+    try {
+      console.log('Downloading paper:', paper.title, 'URL:', paper.download_url);
+      if (paper.download_url && paper.download_url !== '#') {
+        // Use the papers service to handle download tracking
+        const result = await papers.downloadPaper(paper.id, paper);
+        if (!result.success) {
+          console.error('Download tracking failed:', result.error);
+          // Still open the file even if tracking fails
+          window.open(paper.download_url, '_blank');
+        }
+      } else {
+        alert('Download URL not available or not properly configured');
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download paper');
+    }
   };
 
   const totalPages = Math.ceil(filteredPapers.length / itemsPerPage);
