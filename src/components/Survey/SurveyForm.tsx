@@ -16,11 +16,11 @@ const SUBJECTS = [
 ];
 
 const STUDY_FREQUENCIES = [
-  'Daily',
-  '2-3 times per week',
-  'Once a week',
-  'Few times a month',
-  'Rarely'
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekly', label: '2-3 times per week' },
+  { value: 'weekly', label: 'Once a week' },
+  { value: 'monthly', label: 'Few times a month' },
+  { value: 'rarely', label: 'Rarely' }
 ];
 
 const PREFERRED_RESOURCES = [
@@ -225,18 +225,18 @@ const SurveyForm: React.FC<SurveyFormProps> = ({ onSubmit, variant = 'page' }) =
                 How frequently do you study online?
               </label>
               <div className="space-y-2">
-                {STUDY_FREQUENCIES.map(frequency => (
-                  <label key={frequency} className="flex items-center">
+                {STUDY_FREQUENCIES.map((frequency, index) => (
+                  <label key={index} className="flex items-center">
                     <input
                       type="radio"
                       name="studyFrequency"
-                      value={frequency}
-                      checked={formData.studyFrequency === frequency}
+                      value={frequency.value}
+                      checked={formData.studyFrequency === frequency.value}
                       onChange={(e) => setFormData(prev => ({...prev, studyFrequency: e.target.value}))}
                       className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
                     />
                     <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                      {frequency}
+                      {frequency.label}
                     </span>
                   </label>
                 ))}

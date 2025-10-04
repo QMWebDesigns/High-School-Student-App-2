@@ -383,6 +383,7 @@ const uploadFileToStorage = async (
     }
 
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    console.log(`Generated download URL for ${bucket}:`, data.publicUrl);
     return { success: true, publicUrl: data.publicUrl, path };
   } catch (error: unknown) {
     console.error('Upload error:', error);
@@ -392,48 +393,68 @@ const uploadFileToStorage = async (
 
 // Public helpers for books
 export const uploadBookCover = async (file: File, title: string) => {
-  const bucket = 'library'; // Ensure this bucket exists in Supabase
+  const bucket = 'books'; // Use the correct bucket name
   const slug = sanitizePathSegment(title || 'book');
   const ext = getFileExtension(file.name) || 'jpg';
-  const path = `books/covers/${slug}-${Date.now()}.${ext}`;
+  const path = `covers/${slug}-${Date.now()}.${ext}`;
   return uploadFileToStorage(bucket, path, file, true);
 };
 
 export const uploadBookFile = async (file: File, title: string) => {
-  const bucket = 'library'; // Ensure this bucket exists in Supabase
+  const bucket = 'books'; // Use the correct bucket name
   const slug = sanitizePathSegment(title || 'book');
   const ext = getFileExtension(file.name) || 'pdf';
-  const path = `books/files/${slug}-${Date.now()}.${ext}`;
+  const path = `files/${slug}-${Date.now()}.${ext}`;
   return uploadFileToStorage(bucket, path, file, true);
 };
 
 // Public helpers for study guides
 export const uploadGuidePreview = async (file: File, title: string) => {
-  const bucket = 'library';
+  const bucket = 'study-guides'; // Use the correct bucket name
   const slug = sanitizePathSegment(title || 'guide');
   const ext = getFileExtension(file.name) || 'jpg';
-  const path = `guides/previews/${slug}-${Date.now()}.${ext}`;
+  const path = `previews/${slug}-${Date.now()}.${ext}`;
   return uploadFileToStorage(bucket, path, file, true);
 };
 
 export const uploadGuideFile = async (file: File, title: string) => {
-  const bucket = 'library';
+  const bucket = 'study-guides'; // Use the correct bucket name
   const slug = sanitizePathSegment(title || 'guide');
   const ext = getFileExtension(file.name) || 'pdf';
-  const path = `guides/files/${slug}-${Date.now()}.${ext}`;
+  const path = `files/${slug}-${Date.now()}.${ext}`;
   return uploadFileToStorage(bucket, path, file, true);
 };
 
 // Utility function to test download URLs
 export const testDownloadUrl = async (url: string): Promise<{ success: boolean; error?: string }> => {
   try {
+    console.log('Testing download URL:', url);
     const response = await fetch(url, { method: 'HEAD' });
+    console.log('URL test result:', response.status, response.statusText);
     if (response.ok) {
       return { success: true };
     } else {
       return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
     }
   } catch (error) {
+    console.error('URL test error:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+};
+
+// Utility function to validate and fix download URLs
+export const validateDownloadUrl = (url: string | undefined | null): string | null => {
+  if (!url || url === '#' || url === '' || url === null) {
+    console.warn('Invalid download URL:', url);
+    return null;
+  }
+  
+  // Check if it's a valid URL
+  try {
+    new URL(url);
+    return url;
+  } catch {
+    console.warn('Malformed download URL:', url);
+    return null;
   }
 };

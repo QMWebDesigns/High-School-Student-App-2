@@ -34,7 +34,7 @@ const Login: React.FC = () => {
         const userIsAdmin = result.user.email ? 
           ['admin@example.com', 'admin@school.com'].includes(result.user.email.toLowerCase()) : false;
         
-        navigate(userIsAdmin ? '/admin' : '/student');
+        navigate(userIsAdmin ? '/admin' : '/home');
       }
     } catch {
       setError('An unexpected error occurred');
