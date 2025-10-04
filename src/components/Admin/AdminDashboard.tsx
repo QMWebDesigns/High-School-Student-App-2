@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Upload, FileText, TrendingUp, Users, RefreshCw, GraduationCap, BookOpen } from 'lucide-react';
+import { Upload, FileText, TrendingUp, Users, RefreshCw, GraduationCap, BookOpen, LogOut } from 'lucide-react';
 import { getSurveys, getPapers } from '../../services/supabaseService';
+import { useAuth } from '../../contexts/AuthContext';
 import UploadPaper from './UploadPaper';
 import PaperManagement from './PaperManagement';
 import StudyGuideManagement from './StudyGuideManagement';
@@ -21,6 +22,7 @@ interface SurveyAnalytics {
 }
 
 const AdminDashboard: React.FC = () => {
+  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'upload' | 'manage' | 'study-guides' | 'books'>('dashboard');
   const [analytics, setAnalytics] = useState<SurveyAnalytics>({
     subjectCounts: {},
@@ -36,6 +38,14 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const [analyticsError, setAnalyticsError] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   const fetchAnalytics = useCallback(async () => {
     setLoading(true);
@@ -151,14 +161,23 @@ const AdminDashboard: React.FC = () => {
             Manage papers and view analytics
           </p>
         </div>
-        <button
-          onClick={fetchAnalytics}
-          disabled={loading}
-        className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={fetchAnalytics}
+            disabled={loading}
+            className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button
+            onClick={handleLogout}
+            className="flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 rounded-md transition-colors"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className="mb-8">
