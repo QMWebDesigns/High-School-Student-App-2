@@ -142,18 +142,23 @@ const Books: React.FC = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
+        console.log('Fetching books from database...');
         const result = await getBooks();
-        if (result.success) {
+        console.log('Books fetch result:', result);
+        if (result.success && result.books.length > 0) {
+          console.log('Using real books data:', result.books.length, 'books');
           setBooks(result.books);
           setFilteredBooks(result.books);
         } else {
-          console.error('Failed to fetch books:', result.error);
+          console.error('Failed to fetch books or no books found:', result.error);
+          console.log('Falling back to sample data');
           // Fallback to sample data if API fails
           setBooks(sampleBooks);
           setFilteredBooks(sampleBooks);
         }
       } catch (error) {
         console.error('Error fetching books:', error);
+        console.log('Falling back to sample data due to error');
         // Fallback to sample data if API fails
         setBooks(sampleBooks);
         setFilteredBooks(sampleBooks);
@@ -394,10 +399,10 @@ const Books: React.FC = () => {
                     <button 
                       onClick={() => {
                         console.log('Downloading book:', book.title, 'URL:', book.downloadUrl);
-                        if (book.downloadUrl) {
+                        if (book.downloadUrl && book.downloadUrl !== '#') {
                           window.open(book.downloadUrl, '_blank');
                         } else {
-                          alert('Download URL not available');
+                          alert('Download URL not available or not properly configured');
                         }
                       }}
                       className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

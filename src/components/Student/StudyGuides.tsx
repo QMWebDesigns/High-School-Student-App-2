@@ -207,18 +207,23 @@ const StudyGuides: React.FC = () => {
   useEffect(() => {
     const fetchStudyGuides = async () => {
       try {
+        console.log('Fetching study guides from database...');
         const result = await getStudyGuides();
-        if (result.success) {
+        console.log('Study guides fetch result:', result);
+        if (result.success && result.guides.length > 0) {
+          console.log('Using real study guides data:', result.guides.length, 'guides');
           setGuides(result.guides);
           setFilteredGuides(result.guides);
         } else {
-          console.error('Failed to fetch study guides:', result.error);
+          console.error('Failed to fetch study guides or no guides found:', result.error);
+          console.log('Falling back to sample data');
           // Fallback to sample data if API fails
           setGuides(sampleGuides);
           setFilteredGuides(sampleGuides);
         }
       } catch (error) {
         console.error('Error fetching study guides:', error);
+        console.log('Falling back to sample data due to error');
         // Fallback to sample data if API fails
         setGuides(sampleGuides);
         setFilteredGuides(sampleGuides);
@@ -482,10 +487,10 @@ const StudyGuides: React.FC = () => {
                     <button 
                       onClick={() => {
                         console.log('Downloading guide:', guide.title, 'URL:', guide.downloadUrl);
-                        if (guide.downloadUrl) {
+                        if (guide.downloadUrl && guide.downloadUrl !== '#') {
                           window.open(guide.downloadUrl, '_blank');
                         } else {
-                          alert('Download URL not available');
+                          alert('Download URL not available or not properly configured');
                         }
                       }}
                       className="flex-1 flex items-center justify-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
