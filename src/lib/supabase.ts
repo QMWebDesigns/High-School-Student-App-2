@@ -58,6 +58,9 @@ export interface UploadMetadata {
   year: number;
   description?: string;
   publisher?: string;
+  // Additional optional fields supported by UI forms
+  format?: string;
+  identifier?: string;
 }
 
 // Using centralized Supabase client from config
@@ -137,7 +140,7 @@ export const papers = {
       const filePath = `grade-${metadata.grade}/${metadata.subject}/${metadata.year}/${metadata.examType}/${fileName}`;
 
       // Upload file to Supabase Storage
-      const { data: storageData, error: storageError } = await supabase.storage
+      const { data: _storageData, error: storageError } = await supabase.storage
         .from('papers')
         .upload(filePath, file, {
           contentType: file.type,

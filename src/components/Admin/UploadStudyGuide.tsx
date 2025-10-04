@@ -3,8 +3,8 @@ import { Upload, GraduationCap, CheckCircle } from 'lucide-react';
 import { saveStudyGuide, uploadGuideFile, uploadGuidePreview } from '../../services/libraryService';
 
 const UploadStudyGuide = () => {
-  const [file, setFile] = useState(null);
-  const [previewFile, setPreviewFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -38,7 +38,7 @@ const UploadStudyGuide = () => {
 
   // These functions are now handled by libraryService
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) {
       setError('Please select a study guide file');
@@ -62,7 +62,7 @@ const UploadStudyGuide = () => {
         if (!previewRes.success) {
           throw new Error(previewRes.error || 'Failed to upload preview image');
         }
-        previewUrl = previewRes.publicUrl;
+        previewUrl = previewRes.publicUrl || '';
       }
 
       // Upload study guide file
@@ -79,7 +79,7 @@ const UploadStudyGuide = () => {
         topic: formData.topic || '',
         description: formData.description || '',
         author: formData.author,
-        difficulty: formData.difficulty,
+        difficulty: formData.difficulty as 'Beginner' | 'Intermediate' | 'Advanced',
         estimatedTime: formData.estimatedTime || '',
         downloadUrl: uploadRes.publicUrl,
         previewUrl: previewUrl || '',
@@ -104,8 +104,9 @@ const UploadStudyGuide = () => {
       });
       setFile(null);
       setPreviewFile(null);
-    } catch (err) {
-      setError(err.message || 'An error occurred');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'An error occurred';
+      setError(message);
     } finally {
       setUploading(false);
     }
