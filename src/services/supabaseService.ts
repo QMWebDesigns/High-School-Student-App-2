@@ -74,7 +74,7 @@ export const getPapers = async (useCache: boolean = true) => {
       publisher: row.publisher,
       format: row.format,
       identifier: row.identifier,
-      downloadUrl: row.downloadUrl
+      downloadUrl: row.download_url
     }));
 
     // Update cache
