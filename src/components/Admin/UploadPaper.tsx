@@ -13,7 +13,7 @@ const SUBJECTS = [
   'Mathematical Literacy'
 ];
 
-const PROVINCES = ['KwaZulu-Natal', 'Gauteng'];
+const PROVINCES = ['KZN', 'Gauteng'] as const;
 const GRADES = ['10', '11', '12'];
 const EXAM_TYPES = ['Mid-Year', 'Final', 'Trial', 'Supplementary'];
 
@@ -21,9 +21,22 @@ interface UploadPaperProps {
   onUploadSuccess: () => void;
 }
 
+type PaperFormData = {
+  title: string;
+  grade: string;
+  subject: string;
+  province: (typeof PROVINCES)[number] | '';
+  examType: string;
+  year: string;
+  description: string;
+  publisher: string;
+  format: string;
+  identifier: string;
+};
+
 const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [metadata, setMetadata] = useState<UploadMetadata>({
+  const [metadata, setMetadata] = useState<PaperFormData>({
     title: '',
     grade: '',
     subject: '',
@@ -60,7 +73,7 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
     }
   };
 
-  const handleMetadataChange = (field: keyof PaperMetadata, value: string) => {
+  const handleMetadataChange = (field: keyof PaperFormData, value: string) => {
     setMetadata(prev => ({
       ...prev,
       [field]: value
@@ -105,8 +118,20 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
     setError('');
 
     try {
+      // Prepare strongly-typed metadata for upload
+      const uploadData: UploadMetadata = {
+        title: metadata.title,
+        grade: Number(metadata.grade),
+        subject: metadata.subject,
+        province: (metadata.province || 'KZN') as UploadMetadata['province'],
+        examType: metadata.examType,
+        year: Number(metadata.year),
+        description: metadata.description,
+        publisher: metadata.publisher
+      };
+
       // Upload to Supabase
-      const uploadResult = await papers.uploadPaper(file, metadata);
+      const uploadResult = await papers.uploadPaper(file, uploadData);
       
       if (uploadResult.success && uploadResult.paper) {
         // Paper uploaded successfully to Supabase

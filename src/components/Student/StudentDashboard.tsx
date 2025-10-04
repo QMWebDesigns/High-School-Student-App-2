@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
 import { getPapers } from '../../services/supabaseService';
 import { PaperMetadata } from '../../services/githubService';

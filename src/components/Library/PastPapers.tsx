@@ -1,9 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Search, Download, BookOpen, Calendar, MapPin } from 'lucide-react';
-import { getPapers } from '../../services/supabaseService';
-import type { PaperMetadata } from '../../services/githubService';
-import { SAMPLE_PAPERS } from '../../data/sampleContent'; // Updated import
-import { useNavigate } from 'react-router-dom'
+// removed unused imports
 import { papers } from '../../lib/supabase';
 
 const SUBJECTS = [
