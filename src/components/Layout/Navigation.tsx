@@ -39,7 +39,7 @@ const Navigation: React.FC = () => {
 
   // Student-specific navigation (when logged in as student)
   const studentNavigation = [
-    { to: '/student', label: 'Dashboard', icon: Home },
+    { to: '/home', label: 'Dashboard', icon: Home },
     { to: '/library/papers', label: 'Past Papers', icon: FileText },
     { to: '/library/guides', label: 'Study Guides', icon: GraduationCap },
     { to: '/library/books', label: 'Books', icon: Book },

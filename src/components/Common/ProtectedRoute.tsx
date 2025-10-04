@@ -16,7 +16,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAdmin 
   }
 
   if (requireAdmin && !isUserAdmin) {
-    return <Navigate to="/student" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return <>{children}</>;

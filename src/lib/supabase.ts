@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../config/supabaseClient';
 
 // Types
 export interface User {
@@ -60,15 +60,7 @@ export interface UploadMetadata {
   publisher?: string;
 }
 
-// Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Using centralized Supabase client from config
 
 // Auth functions
 export const auth = {

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle } from 'lucide-react';
-import { uploadPDFToGitHub, PaperMetadata } from '../../services/githubService';
-import { savePaperMetadata } from '../../services/supabaseService';
+import { papers, UploadMetadata } from '../../lib/supabase';
 
 const SUBJECTS = [
   'Life Sciences',
@@ -24,7 +23,7 @@ interface UploadPaperProps {
 
 const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [metadata, setMetadata] = useState<PaperMetadata>({
+  const [metadata, setMetadata] = useState<UploadMetadata>({
     title: '',
     grade: '',
     subject: '',
@@ -106,41 +105,30 @@ const UploadPaper: React.FC<UploadPaperProps> = ({ onUploadSuccess }) => {
     setError('');
 
     try {
-      // Upload to GitHub
-      const uploadResult = await uploadPDFToGitHub(file, metadata);
+      // Upload to Supabase
+      const uploadResult = await papers.uploadPaper(file, metadata);
       
-      if (uploadResult.success && uploadResult.downloadUrl) {
-        // Save metadata to Firestore
-        const metadataWithUrl = {
-          ...metadata,
-          downloadUrl: uploadResult.downloadUrl
-        };
+      if (uploadResult.success && uploadResult.paper) {
+        // Paper uploaded successfully to Supabase
+        setSuccess(true);
+        setFile(null);
+        setMetadata({
+          title: '',
+          grade: '',
+          subject: '',
+          province: '',
+          examType: '',
+          year: '2023',
+          description: '',
+          publisher: '',
+          format: 'PDF',
+          identifier: ''
+        });
+        onUploadSuccess();
         
-        const saveResult = await savePaperMetadata(metadataWithUrl);
-        
-        if (saveResult.success) {
-          setSuccess(true);
-          setFile(null);
-          setMetadata({
-            title: '',
-            grade: '',
-            subject: '',
-            province: '',
-            examType: '',
-            year: '2023',
-            description: '',
-            publisher: '',
-            format: 'PDF',
-            identifier: ''
-          });
-          onUploadSuccess();
-          
-          // Reset form
-          const form = document.getElementById('upload-form') as HTMLFormElement;
-          if (form) form.reset();
-        } else {
-          setError(saveResult.error || 'Failed to save metadata');
-        }
+        // Reset form
+        const form = document.getElementById('upload-form') as HTMLFormElement;
+        if (form) form.reset();
       } else {
         setError(uploadResult.error || 'Failed to upload file');
       }
